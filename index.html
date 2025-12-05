@@ -48,17 +48,33 @@ L.marker([35.32427316156263, 139.55372424845376])
   .addTo(map)
   .bindPopup("小町通り終点");
 
+// ★★ 入口〜ゴール ルート（4点）を点線で結ぶ ★★
+
 L.polyline([
   [35.31941361172205, 139.55125790932254],
   [35.3203859270644, 139.55175874988637],
   [35.3223258256739, 139.55267407920945],
   [35.32428646062413, 139.5537310633092]
 ], {
-  color: 'rgba(255, 0, 0, 0.4)',  // 赤を薄く（透明度40%）
-  weight: 8,                      // 太さ8
-  dashArray: '10 10',             // 点線（10px線 → 10px隙間）
-  lineCap: 'round'                // 丸いエッジで綺麗に
+  color: '#ff0000',     // 薄めの赤（変えたいなら言って！）
+  weight: 8,            // 太さ：8
+  opacity: 0.5,         // 色を薄く
+  dashArray: '10, 10'   // 点線（10px線 → 10px空白）
 }).addTo(map);
+
+
+// ★★ マップのズーム固定（スクロール拡大などを禁止） ★★
+
+map.scrollWheelZoom.disable();  // マウスホイール拡大禁止
+map.touchZoom.disable();        // スマホ pinch 拡大禁止
+map.doubleClickZoom.disable();  // ダブルタップ禁止
+map.boxZoom.disable();          // ドラッグで拡大禁止
+map.keyboard.disable();         // キーボード操作禁止
+
+// ズームレベル固定（例：17）
+map.setMinZoom(17);
+map.setMaxZoom(17);
+
 
 </script>
 
