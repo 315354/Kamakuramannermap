@@ -6,20 +6,22 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 body { margin:0; font-family:sans-serif; background:#f7f7f7; }
-header { background:#ffcc33; padding:15px; text-align:center; font-size:22px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+header { background:#ffcc33; padding:15px; text-align:center; font-size:26px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
 #controls { text-align:center; padding:5px; }
-button { margin:3px; padding:6px 12px; font-size:14px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
+button { margin:3px; padding:8px 14px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
 button:hover { background:#45a049;}
 #map { height:90vh; margin:0 auto; max-width:100%; border:2px solid #ccc; border-radius:8px; }
-#tips { max-width:100%; margin:5px auto; padding:8px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:15px; min-height:60px; }
-.legend { background:white; padding:8px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3); font-size:14px;}
-.legend span { display:inline-block; width:12px; height:12px; margin-right:5px; vertical-align:middle; }
-.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; font-size:12px; }
+#tips { max-width:100%; margin:5px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:18px; min-height:70px; line-height:1.5; }
+.legend { background:white; padding:10px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3); font-size:16px;}
+.legend span { display:inline-block; width:16px; height:16px; margin-right:5px; vertical-align:middle; }
+.marker-label { font-weight:bold; color:white; text-align:center; line-height:28px; font-size:14px; }
 
 @media (max-width:480px){
   #map { height:95vh; }
-  #tips { font-size:16px; min-height:60px; }
-  header { font-size:20px; padding:12px; }
+  #tips { font-size:20px; min-height:70px; }
+  header { font-size:24px; padding:12px; }
+  button { font-size:18px; padding:8px 16px; }
+  .marker-label { font-size:16px; line-height:30px; }
 }
 </style>
 </head>
@@ -92,14 +94,14 @@ function showTime(time){
   currentMarkers.forEach(m=>map.removeLayer(m)); currentMarkers=[];
   spots.forEach((spot,index)=>{
     const level=congestionLevels[time][index];
-    const marker=L.circleMarker([spot.lat,spot.lng],{radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9}).addTo(map);
+    const marker=L.circleMarker([spot.lat,spot.lng],{radius:18, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9}).addTo(map);
     marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;});
-    const label=L.divIcon({className:'marker-label',html:spot.name.replace("スポット",""),iconSize:[24,24], iconAnchor:[12,12]});
+    const label=L.divIcon({className:'marker-label',html:spot.name.replace("スポット",""),iconSize:[28,28], iconAnchor:[14,14]});
     const labelMarker=L.marker([spot.lat,spot.lng],{icon:label}).addTo(map);
     currentMarkers.push(marker,labelMarker);
   });
   stores.forEach(store=>{
-    const marker=L.circleMarker([store.lat,store.lng],{radius:18, fillColor:"blue", color:"blue", fillOpacity:0.9}).addTo(map);
+    const marker=L.circleMarker([store.lat,store.lng],{radius:20, fillColor:"blue", color:"blue", fillOpacity:0.9}).addTo(map);
     marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;});
     currentMarkers.push(marker);
   });
