@@ -2,20 +2,25 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Kamakura Map - 店舗マナー版</title>
+<title>Kamakura Map - 折りたたみ版</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 html, body { margin:0; padding:0; height:100%; font-family:sans-serif; }
 body { display:flex; }
-#map { flex:1; height:100vh; }
+#map { flex:1; height:100vh; transition: margin-right 0.3s; }
 #sidebar {
   width:400px; max-width:80%;
   background:#f0f0f0; overflow-y:auto;
   position:fixed; right:0; top:0; bottom:0;
   padding:15px; box-sizing:border-box; z-index:1000;
+  transition: transform 0.3s;
+}
+#sidebar.closed { transform: translateX(100%); }
+#toggleSidebar {
+  position:absolute; top:10px; left:-30px; width:30px; height:30px;
+  background:#3498db; color:#fff; font-weight:bold; text-align:center; line-height:30px;
+  cursor:pointer; border-radius:3px; z-index:1100;
 }
 h2 { margin-top:0; }
 .item { margin-bottom:15px; padding:10px; border-radius:5px; cursor:pointer;
@@ -34,74 +39,68 @@ h2 { margin-top:0; }
 
 <div id="map"></div>
 <div id="sidebar">
-<h2>店舗マナー / Store Manners</h2>
-<div id="list"></div>
-<div id="form">
-<h3>店舗情報・マナーを追加</h3>
-<input id="storeName" placeholder="店舗名">
-<input id="address" placeholder="住所">
-<input id="contact" placeholder="連絡先">
-<input id="titleJP" placeholder="マナータイトル（日本語）">
-<input id="titleEN" placeholder="Title (EN)">
-<input id="lat" placeholder="緯度" type="number" step="0.000001">
-<input id="lng" placeholder="経度" type="number" step="0.000001">
-<input id="img" placeholder="画像URL">
-<textarea id="detailJP" placeholder="マナー説明（日本語）"></textarea>
-<textarea id="detailEN" placeholder="Description (EN)"></textarea>
-<button onclick="addManner()">追加</button>
-</div>
+  <div id="toggleSidebar">×</div>
+  <h2>店舗マナー / Store Manners</h2>
+  <div id="list"></div>
+  <div id="form">
+    <h3>店舗情報・マナーを追加</h3>
+    <input id="storeName" placeholder="店舗名">
+    <input id="address" placeholder="住所">
+    <input id="contact" placeholder="連絡先">
+    <input id="titleJP" placeholder="マナータイトル（日本語）">
+    <input id="titleEN" placeholder="Title (EN)">
+    <input id="lat" placeholder="緯度" type="number" step="0.000001">
+    <input id="lng" placeholder="経度" type="number" step="0.000001">
+    <input id="img" placeholder="画像URL">
+    <textarea id="detailJP" placeholder="マナー説明（日本語）"></textarea>
+    <textarea id="detailEN" placeholder="Description (EN)"></textarea>
+    <button onclick="addStore()">追加</button>
+  </div>
 </div>
 
 <script>
-// -------------------- Firebase 初期化 --------------------
-var firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
-
 // -------------------- マップ作成 --------------------
 var map = L.map('map').setView([35.3198, 139.5520], 17);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
+
 var listDiv = document.getElementById("list");
+var stores = [];
 
-// -------------------- Firestore リアルタイム取得 --------------------
-db.collection("storeManners").orderBy("storeName").onSnapshot(snapshot=>{
-  listDiv.innerHTML = "";
-  map.eachLayer((layer)=>{if(layer instanceof L.Marker) map.removeLayer(layer)});
-  
-  snapshot.forEach(doc=>{
-    let data = doc.data();
-    let marker = L.marker([data.lat, data.lng]).addTo(map)
-      .bindPopup(`<b>${data.storeName}</b><br>${data.address}<br>${data.contact}<hr>
-                  <b>${data.titleJP}</b><br>${data.detailJP}<hr>
-                  <b>${data.titleEN}</b><br>${data.detailEN}`);
-
-    var item = document.createElement("div");
-    item.className = "item";
-    item.innerHTML = `<img src="${data.img}" alt="${data.storeName}">
-      <div class="title">${data.storeName}</div>
-      <p>${data.address}<br>${data.contact}<br><b>${data.titleJP}</b>: ${data.detailJP}<br>
-      <b>${data.titleEN}</b>: ${data.detailEN}</p>`;
-
-    item.addEventListener("click", function(){
-      document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
-      this.classList.add("selected");
-      map.setView([data.lat, data.lng],18);
-      marker.openPopup();
-    });
-
-    listDiv.appendChild(item);
-  });
+// -------------------- サイドバー折りたたみ --------------------
+var sidebar = document.getElementById("sidebar");
+var toggleBtn = document.getElementById("toggleSidebar");
+toggleBtn.addEventListener("click", function(){
+  sidebar.classList.toggle("closed");
 });
 
-// -------------------- フォームから追加 --------------------
-function addManner(){
+// -------------------- 店舗追加関数 --------------------
+function addStore(data){
+  var marker = L.marker([data.lat, data.lng]).addTo(map)
+    .bindPopup(`<b>${data.storeName}</b><br>${data.address}<br>${data.contact}<hr>
+                <b>${data.titleJP}</b><br>${data.detailJP}<hr>
+                <b>${data.titleEN}</b><br>${data.detailEN}`);
+
+  var item = document.createElement("div");
+  item.className = "item";
+  item.innerHTML = `<img src="${data.img}" alt="${data.storeName}">
+    <div class="title">${data.storeName}</div>
+    <p>${data.address}<br>${data.contact}<br>
+    <b>${data.titleJP}</b>: ${data.detailJP}<br>
+    <b>${data.titleEN}</b>: ${data.detailEN}</p>`;
+
+  item.addEventListener("click", function(){
+    document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
+    this.classList.add("selected");
+    map.setView([data.lat, data.lng],18);
+    marker.openPopup();
+  });
+
+  listDiv.appendChild(item);
+  stores.push(data);
+}
+
+// -------------------- フォーム追加 --------------------
+function addStore(){
   var data = {
     storeName: document.getElementById("storeName").value,
     address: document.getElementById("address").value,
@@ -118,20 +117,34 @@ function addManner(){
     alert("店舗名と座標は必須です！");
     return;
   }
-  db.collection("storeManners").add(data).then(()=>{
-    alert("店舗マナーを追加しました！");
-    document.getElementById("storeName").value="";
-    document.getElementById("address").value="";
-    document.getElementById("contact").value="";
-    document.getElementById("titleJP").value="";
-    document.getElementById("titleEN").value="";
-    document.getElementById("lat").value="";
-    document.getElementById("lng").value="";
-    document.getElementById("img").value="";
-    document.getElementById("detailJP").value="";
-    document.getElementById("detailEN").value="";
-  });
+  addStore(data);
+
+  // フォームリセット
+  document.getElementById("storeName").value="";
+  document.getElementById("address").value="";
+  document.getElementById("contact").value="";
+  document.getElementById("titleJP").value="";
+  document.getElementById("titleEN").value="";
+  document.getElementById("lat").value="";
+  document.getElementById("lng").value="";
+  document.getElementById("img").value="";
+  document.getElementById("detailJP").value="";
+  document.getElementById("detailEN").value="";
 }
+
+// -------------------- 初期サンプル --------------------
+addStore({
+  storeName:"小町通り入口ゴミ注意",
+  address:"鎌倉市小町通",
+  contact:"-",
+  titleJP:"ゴミは持ち帰ろう",
+  titleEN:"Take your trash home",
+  lat:35.319376,
+  lng:139.551265,
+  img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg",
+  detailJP:"入口付近ではゴミは必ず持ち帰りましょう。",
+  detailEN:"Please take your trash home at the entrance."
+});
 </script>
 
 </body>
