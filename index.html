@@ -2,14 +2,13 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Kamakura Map - スマホ向け拡大UI</title>
+<title>Kamakura Map - シンプルカード版</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
   html, body { margin:0; padding:0; height:100%; font-family:sans-serif; }
-  body { display:flex; transition: all 0.3s; }
-  #map { flex:1; transition: margin-left 0.3s; height:100vh; }
+  body { display:flex; }
+  #map { flex:1; height:100vh; }
 
   #sidebar {
     width:360px;
@@ -69,17 +68,13 @@
 
   .item img { width:100%; border-radius:4px; margin-bottom:8px; }
   .item .title { font-size:16px; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; }
-  .item .title .level { margin-left:6px; font-size:14px; padding:2px 6px; border-radius:3px; color:#fff; }
-  .high .level { background:#e74c3c; }
-  .medium .level { background:#f39c12; }
-  .low .level { background:#27ae60; }
   .item p { margin:0; font-size:14px; line-height:1.3; }
 
   @media(max-width:768px){
     body { flex-direction: column; }
     #sidebar { width:100%; left:-100%; }
     #sidebar.open { left:0; }
-    #map { height:50vh; margin-left:0; }
+    #map { height:50vh; }
     #toggleBtn.open { left:0; }
   }
 </style>
@@ -125,7 +120,6 @@ points.forEach(function(point){
   categories[point.category].push(point);
 });
 
-// マーカーアイコン
 function getIcon(level){
   var color = (level==="high")?"red":(level==="medium")?"orange":"green";
   return L.icon({
@@ -148,13 +142,14 @@ for(var cat in categories){
     var marker = L.marker([point.lat, point.lng], {icon:getIcon(point.level)}).addTo(map)
       .bindPopup(`<b>${point.titleJP}</b><br>${point.detailJP}<hr><b>${point.titleEN}</b><br>${point.detailEN}`);
     
+    // ラベルなしに変更
     var item = document.createElement("div");
-    item.className = "item " + point.level;
-    item.innerHTML = `<img src="${point.img}" alt="${point.titleJP}"><div class="title">${point.titleJP} / ${point.titleEN}<span class="level">${point.level==="high"?"⚠ 高注意":point.level==="medium"?"！ 中注意":"✓ 低注意"}</span></div><p>${point.detailJP}<br>${point.detailEN}</p>`;
+    item.className = "item";
+    item.innerHTML = `<img src="${point.img}" alt="${point.titleJP}">
+    <div class="title">${point.titleJP} / ${point.titleEN}</div>
+    <p>${point.detailJP}<br>${point.detailEN}</p>`;
     
-    // タップ時に選択状態を反映
     item.addEventListener("click", function(){
-      // すべてのカードの選択を解除
       document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
       this.classList.add("selected");
       map.setView([point.lat, point.lng],18);
@@ -186,3 +181,4 @@ map.setMaxZoom(17);
 </script>
 </body>
 </html>
+
