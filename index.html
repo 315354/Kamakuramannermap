@@ -5,68 +5,16 @@
 <title>小町通り 混雑マップ</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-body {
-  margin:0;
-  font-family:sans-serif;
-  background:#f7f7f7;
-}
-header {
-  background:#ffcc33;
-  padding:20px;
-  text-align:center;
-  font-size:24px;
-  font-weight:bold;
-  color:#333;
-  box-shadow:0 2px 4px rgba(0,0,0,0.2);
-}
-#controls {
-  text-align:center;
-  padding:10px;
-}
-#language-buttons, #buttons {
-  margin-bottom:10px;
-}
-button {
-  margin:5px;
-  padding:6px 12px;
-  font-size:14px;
-  border-radius:5px;
-  border:none;
-  cursor:pointer;
-  background:#4CAF50;
-  color:white;
-  transition:0.2s;
-}
-button:hover {
-  background:#45a049;
-}
-#map {
-  height:70vh;
-  margin:0 auto;
-  max-width:900px;
-  border:2px solid #ccc;
-  border-radius:8px;
-}
-#tips {
-  max-width:900px;
-  margin:10px auto;
-  padding:10px;
-  background:#ffffe0;
-  border:1px solid #ccc;
-  border-radius:5px;
-  font-size:14px;
-  min-height:50px;
-}
-.legend {
-  background:white;
-  padding:10px;
-  line-height:1.5;
-  box-shadow:0 0 6px rgba(0,0,0,0.3);
-}
+body { margin:0; font-family:sans-serif; background:#f7f7f7; }
+header { background:#ffcc33; padding:20px; text-align:center; font-size:24px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+#controls { text-align:center; padding:10px; }
+button { margin:5px; padding:6px 12px; font-size:14px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
+button:hover { background:#45a049;}
+#map { height:70vh; margin:0 auto; max-width:900px; border:2px solid #ccc; border-radius:8px; }
+#tips { max-width:900px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:14px; min-height:50px; }
+.legend { background:white; padding:10px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3);}
 .legend span { display:inline-block; width:12px; height:12px; margin-right:5px; vertical-align:middle; }
-.marker-label {
-  font-weight:bold; color:white; text-align:center; line-height:24px; 
-}
+.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; }
 </style>
 </head>
 <body>
@@ -91,9 +39,8 @@ button:hover {
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ここから先は前回作ったマップコードをそのまま使えます
 const map = L.map('map', {
-  center: [35.321, 139.552],
+  center: [35.3219, 139.5525], // 小町通り中心
   zoom: 17,
   dragging: false,
   scrollWheelZoom: false,
@@ -112,15 +59,7 @@ const texts = {
   en: { mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.", congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"} }
 };
 
-// 小町通りポリゴン
-const komachiPolygon = [
-  [35.3195, 139.5512],[35.3196, 139.5515],[35.3200, 139.5520],[35.3208, 139.5525],
-  [35.3215, 139.5527],[35.3220, 139.5528],[35.3226, 139.5530],[35.3232, 139.5532],
-  [35.3238, 139.5535],[35.3240, 139.5536],[35.3242, 139.5537]
-];
-L.polygon(komachiPolygon, { color: 'yellow', weight: 3, fillColor: 'rgba(255,255,0,0.2)', fillOpacity:0.2 }).addTo(map);
-
-// スポット・店舗など（前回のコードをここにコピペ）
+// スポット・店舗情報
 const spots = [
   {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
   {lat:35.320434,lng:139.551728,name:"スポット2",tips:{ja:"ゴミは必ず持ち帰ろう",en:"Take your trash home"}},
@@ -134,6 +73,7 @@ const stores = [
   {lat:35.3218792159195,lng:139.55255664628976,name:"鎌倉着物レンタル和楽",tips:{ja:"・レンタル時の着物は丁寧に扱いましょう<br>・混雑時は順番を守りましょう",en:"- Handle rented kimono carefully<br>- Follow the queue during busy times"}},
   {lat:35.32243404058744,lng:139.5527143339346,name:"鎌倉甘味処くるみ",tips:{ja:"・甘味を食べたらゴミは持ち帰りましょう<br>・順番を守って並びましょう",en:"- Take trash home after eating<br>- Follow the queue"}}
 ];
+
 const congestionLevels = { "平日昼":["やや混雑","やや混雑","空き","空き"], "平日夕方":["混雑","混雑","やや混雑","やや混雑"], "休日昼":["混雑","混雑","混雑","やや混雑"], "休日夕方":["やや混雑","やや混雑","やや混雑","空き"] };
 let currentMarkers=[],currentLanguage='ja',currentTime='平日昼';
 function getColor(level){ if(level==="混雑") return "red"; if(level==="やや混雑") return "orange"; return "green"; }
