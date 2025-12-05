@@ -2,13 +2,61 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>小町通り 混雑マップ（固定マナー表示）</title>
+<title>小町通り 混雑マップ</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-body { margin:0; padding:0; font-family:sans-serif; }
-#map { height:80vh; }
-#buttons, #language-buttons { text-align:center; padding:10px; background:#f0f0f0; }
-button { margin:5px; padding:5px 10px; font-size:14px; }
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:#f7f7f7;
+}
+header {
+  background:#ffcc33;
+  padding:20px;
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+  color:#333;
+  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+#controls {
+  text-align:center;
+  padding:10px;
+}
+#language-buttons, #buttons {
+  margin-bottom:10px;
+}
+button {
+  margin:5px;
+  padding:6px 12px;
+  font-size:14px;
+  border-radius:5px;
+  border:none;
+  cursor:pointer;
+  background:#4CAF50;
+  color:white;
+  transition:0.2s;
+}
+button:hover {
+  background:#45a049;
+}
+#map {
+  height:70vh;
+  margin:0 auto;
+  max-width:900px;
+  border:2px solid #ccc;
+  border-radius:8px;
+}
+#tips {
+  max-width:900px;
+  margin:10px auto;
+  padding:10px;
+  background:#ffffe0;
+  border:1px solid #ccc;
+  border-radius:5px;
+  font-size:14px;
+  min-height:50px;
+}
 .legend {
   background:white;
   padding:10px;
@@ -19,21 +67,23 @@ button { margin:5px; padding:5px 10px; font-size:14px; }
 .marker-label {
   font-weight:bold; color:white; text-align:center; line-height:24px; 
 }
-#tips { text-align:center; padding:10px; font-size:14px; background:#ffffe0; border-top:1px solid #ccc; min-height:50px; }
 </style>
 </head>
 <body>
 
-<div id="language-buttons">
-  <button onclick="setLanguage('ja')">日本語</button>
-  <button onclick="setLanguage('en')">English</button>
-</div>
+<header>小町通り 混雑マップ（マナー表示付き）</header>
 
-<div id="buttons">
-  <button onclick="showTime('平日昼')">平日昼</button>
-  <button onclick="showTime('平日夕方')">平日夕方</button>
-  <button onclick="showTime('休日昼')">休日昼</button>
-  <button onclick="showTime('休日夕方')">休日夕方</button>
+<div id="controls">
+  <div id="language-buttons">
+    <button onclick="setLanguage('ja')">日本語</button>
+    <button onclick="setLanguage('en')">English</button>
+  </div>
+  <div id="buttons">
+    <button onclick="showTime('平日昼')">平日昼</button>
+    <button onclick="showTime('平日夕方')">平日夕方</button>
+    <button onclick="showTime('休日昼')">休日昼</button>
+    <button onclick="showTime('休日夕方')">休日夕方</button>
+  </div>
 </div>
 
 <div id="map"></div>
@@ -41,6 +91,7 @@ button { margin:5px; padding:5px 10px; font-size:14px; }
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ここから先は前回作ったマップコードをそのまま使えます
 const map = L.map('map', {
   center: [35.321, 139.552],
   zoom: 17,
@@ -57,46 +108,25 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }).addTo(map);
 
 const texts = {
-  ja: {
-    mapTips:"⚠️ 小町通りを歩くときのマナー：歩行中はスマホを見ずに周りに注意、ゴミは持ち帰りましょう。",
-    congestionLegend:{"混雑":"混雑","やや混雑":"やや混雑","空き":"空き"}
-  },
-  en: {
-    mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.",
-    congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"}
-  }
+  ja: { mapTips:"⚠️ 小町通りを歩くときのマナー：歩行中はスマホを見ずに周りに注意、ゴミは持ち帰りましょう。", congestionLegend:{"混雑":"混雑","やや混雑":"やや混雑","空き":"空き"} },
+  en: { mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.", congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"} }
 };
 
-// 小町通りポリゴン（道沿い座標）
+// 小町通りポリゴン
 const komachiPolygon = [
-  [35.3195, 139.5512],
-  [35.3196, 139.5515],
-  [35.3200, 139.5520],
-  [35.3208, 139.5525],
-  [35.3215, 139.5527],
-  [35.3220, 139.5528],
-  [35.3226, 139.5530],
-  [35.3232, 139.5532],
-  [35.3238, 139.5535],
-  [35.3240, 139.5536],
-  [35.3242, 139.5537]
+  [35.3195, 139.5512],[35.3196, 139.5515],[35.3200, 139.5520],[35.3208, 139.5525],
+  [35.3215, 139.5527],[35.3220, 139.5528],[35.3226, 139.5530],[35.3232, 139.5532],
+  [35.3238, 139.5535],[35.3240, 139.5536],[35.3242, 139.5537]
 ];
-L.polygon(komachiPolygon, {
-  color: 'yellow',
-  weight: 3,
-  fillColor: 'rgba(255,255,0,0.2)',
-  fillOpacity: 0.2
-}).addTo(map);
+L.polygon(komachiPolygon, { color: 'yellow', weight: 3, fillColor: 'rgba(255,255,0,0.2)', fillOpacity:0.2 }).addTo(map);
 
-// スポット情報
+// スポット・店舗など（前回のコードをここにコピペ）
 const spots = [
   {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
   {lat:35.320434,lng:139.551728,name:"スポット2",tips:{ja:"ゴミは必ず持ち帰ろう",en:"Take your trash home"}},
   {lat:35.322326,lng:139.552648,name:"スポット3",tips:{ja:"譲り合いの歩行を心がけよう",en:"Walk considerately"}},
   {lat:35.324279,lng:139.553704,name:"スポット4",tips:{ja:"歩きスマホ禁止",en:"No smartphone while walking"}}
 ];
-
-// 店舗情報
 const stores = [
   {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"}},
   {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",en:"- Take trash home after buying chocolate<br>- Follow queue and share space"}},
@@ -104,79 +134,31 @@ const stores = [
   {lat:35.3218792159195,lng:139.55255664628976,name:"鎌倉着物レンタル和楽",tips:{ja:"・レンタル時の着物は丁寧に扱いましょう<br>・混雑時は順番を守りましょう",en:"- Handle rented kimono carefully<br>- Follow the queue during busy times"}},
   {lat:35.32243404058744,lng:139.5527143339346,name:"鎌倉甘味処くるみ",tips:{ja:"・甘味を食べたらゴミは持ち帰りましょう<br>・順番を守って並びましょう",en:"- Take trash home after eating<br>- Follow the queue"}}
 ];
-
-const congestionLevels = {
-  "平日昼":["やや混雑","やや混雑","空き","空き"],
-  "平日夕方":["混雑","混雑","やや混雑","やや混雑"],
-  "休日昼":["混雑","混雑","混雑","やや混雑"],
-  "休日夕方":["やや混雑","やや混雑","やや混雑","空き"]
-};
-
-let currentMarkers=[];
-let currentLanguage='ja';
-let currentTime='平日昼';
-
+const congestionLevels = { "平日昼":["やや混雑","やや混雑","空き","空き"], "平日夕方":["混雑","混雑","やや混雑","やや混雑"], "休日昼":["混雑","混雑","混雑","やや混雑"], "休日夕方":["やや混雑","やや混雑","やや混雑","空き"] };
+let currentMarkers=[],currentLanguage='ja',currentTime='平日昼';
 function getColor(level){ if(level==="混雑") return "red"; if(level==="やや混雑") return "orange"; return "green"; }
-
-function setLanguage(lang){
-  currentLanguage=lang;
-  document.getElementById('tips').innerHTML=texts[lang].mapTips;
-  showTime(currentTime);
-}
-
+function setLanguage(lang){currentLanguage=lang; document.getElementById('tips').innerHTML=texts[lang].mapTips; showTime(currentTime);}
 function showTime(time){
   currentTime=time;
-  currentMarkers.forEach(m=>map.removeLayer(m));
-  currentMarkers=[];
-
-  // スポット
+  currentMarkers.forEach(m=>map.removeLayer(m)); currentMarkers=[];
   spots.forEach((spot,index)=>{
     const level=congestionLevels[time][index];
-    const marker=L.circleMarker([spot.lat,spot.lng],{
-      radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9
-    }).addTo(map);
-    marker.on('click',()=>{ 
-      document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;
-    });
-
-    const label=L.divIcon({
-      className:'marker-label',
-      html:spot.name.replace("スポット",""),
-      iconSize:[24,24], iconAnchor:[12,12]
-    });
+    const marker=L.circleMarker([spot.lat,spot.lng],{radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9}).addTo(map);
+    marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;});
+    const label=L.divIcon({className:'marker-label',html:spot.name.replace("スポット",""),iconSize:[24,24], iconAnchor:[12,12]});
     const labelMarker=L.marker([spot.lat,spot.lng],{icon:label}).addTo(map);
-
     currentMarkers.push(marker,labelMarker);
   });
-
-  // 店舗
-  const storeColors = ["blue","purple","skyblue","pink","green","orange"];
+  const storeColors=["blue","purple","skyblue","pink","green","orange"];
   stores.forEach((store,i)=>{
-    const marker=L.circleMarker([store.lat,store.lng],{
-      radius:18, fillColor:storeColors[i%storeColors.length], color:storeColors[i%storeColors.length], fillOpacity:0.9
-    }).addTo(map);
-    marker.on('click',()=>{ 
-      document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;
-    });
-
+    const marker=L.circleMarker([store.lat,store.lng],{radius:18, fillColor:storeColors[i%storeColors.length], color:storeColors[i%storeColors.length], fillOpacity:0.9}).addTo(map);
+    marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;});
     currentMarkers.push(marker);
   });
 }
-
-// 初期表示
 setLanguage('ja');
-
-// 凡例
 const legend=L.control({position:'bottomright'});
-legend.onAdd=function(){
-  const div=L.DomUtil.create('div','legend');
-  div.innerHTML=`<b>混雑目安</b><br>
-    <span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br>
-    <span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br>
-    <span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br>
-    <span style="background:blue"></span>店舗`;
-  return div;
-};
+legend.onAdd=function(){const div=L.DomUtil.create('div','legend'); div.innerHTML=`<b>混雑目安</b><br><span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br><span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br><span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br><span style="background:blue"></span>店舗`; return div;};
 legend.addTo(map);
 </script>
 </body>
