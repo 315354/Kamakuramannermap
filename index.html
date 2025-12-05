@@ -9,15 +9,23 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    #map {
-      height: 100vh;
-      width: 100%;
-    }
+    body { margin:0; display:flex; font-family: sans-serif; }
+    #map { height: 100vh; width: 70%; }
+    #sidebar { width: 30%; padding: 10px; box-sizing: border-box; overflow-y: auto; background: #f5f5f5; }
+    .item { margin-bottom: 10px; padding: 8px; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color:#fff; font-weight: bold; }
+    .item:hover { opacity: 0.8; }
+    .high { background-color: #e74c3c; }    /* 赤：重要 */
+    .medium { background-color: #f39c12; }  /* オレンジ：注意 */
+    .low { background-color: #27ae60; }     /* 緑：補助 */
   </style>
 </head>
 <body>
 
 <div id="map"></div>
+<div id="sidebar">
+  <h2>マナー啓発ポイント</h2>
+  <div id="list"></div>
+</div>
 
 <script>
 
@@ -29,32 +37,55 @@
     maxZoom: 19
   }).addTo(map);
 
-  // 入口のピン
-  L.marker([35.31937618166221, 139.55126514790774])
-    .addTo(map)
-    .bindPopup("小町通り 大鳥居");
+  // ★★ マナー啓発ポイントデータ（注意度付き） ★★
+  var points = [
+    {lat: 35.319376, lng: 139.551265, title: "小町通り 大鳥居", detail: "入口付近ではゴミは必ず持ち帰りましょう。", level:"high"},
+    {lat: 35.320342, lng: 139.551733, title: "小町通り商店街", detail: "歩きながらの飲食は控えましょう。", level:"medium"},
+    {lat: 35.322364, lng: 139.552682, title: "小町通り", detail: "通りではペットはリード必須です。", level:"low"},
+    {lat: 35.324273, lng: 139.553724, title: "小町通り終点", detail: "観光客同士や地元の方に迷惑をかけないように心がけましょう。", level:"medium"}
+  ];
 
-  // ピン①
-  L.marker([35.320341651344634, 139.55173311917036])
-    .addTo(map)
-    .bindPopup("小町通り商店街");
+  var listDiv = document.getElementById("list");
 
-  // ピン②
-  L.marker([35.32236355002456, 139.5526823859773])
-    .addTo(map)
-    .bindPopup("小町通り");
+  // アイコンを注意度ごとに設定
+  function getIcon(level){
+    var color;
+    if(level === "high") color = "red";
+    else if(level === "medium") color = "orange";
+    else color = "green";
 
-  // ピン③
-  L.marker([35.32427316156263, 139.55372424845376])
-    .addTo(map)
-    .bindPopup("小町通り終点");
+    return L.icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-" + color + ".png",
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+  }
 
-  // ★★ 入口〜ゴール ルート（4点） ★★
+  points.forEach(function(point){
+    // マーカー作成
+    var marker = L.marker([point.lat, point.lng], {icon: getIcon(point.level)}).addTo(map)
+      .bindPopup("<b>" + point.title + "</b><br>" + point.detail);
+
+    // サイドバーにリスト作成
+    var item = document.createElement("div");
+    item.className = "item " + point.level; // 注意度に応じて色を設定
+    item.innerText = point.title;
+    item.onclick = function() {
+      map.setView([point.lat, point.lng], 18);
+      marker.openPopup();
+    };
+    listDiv.appendChild(item);
+  });
+
+  // 入口〜ゴール ルート（4点）
   L.polyline([
-    [35.31941361172205, 139.55125790932254],
-    [35.3203859270644, 139.55175874988637],
-    [35.3223258256739, 139.55267407920945],
-    [35.32428646062413, 139.5537310633092]
+    [35.319414, 139.551258],
+    [35.320386, 139.551759],
+    [35.322326, 139.552674],
+    [35.324286, 139.553731]
   ], {
     color: '#ff0000',
     weight: 8,
@@ -62,7 +93,7 @@
     dashArray: '10, 10'
   }).addTo(map);
 
-  // ★★ ズーム固定 ★★
+  // ズーム固定
   map.scrollWheelZoom.disable();
   map.touchZoom.disable();
   map.doubleClickZoom.disable();
@@ -76,5 +107,3 @@
 
 </body>
 </html>
-
-
