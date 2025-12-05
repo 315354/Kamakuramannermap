@@ -2,157 +2,65 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Kamakura Map - マナー＆混雑表示版</title>
+<title>Kamakura Map - 混雑デモ</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   html, body { margin:0; padding:0; height:100%; font-family:sans-serif; }
   body { display:flex; }
   #map { flex:1; height:100vh; }
-
   #sidebar {
-    width:360px;
-    max-width:80%;
-    background:#f0f0f0;
-    overflow-y:auto;
-    position:fixed;
-    left:-360px;
-    top:0;
-    bottom:0;
-    transition:left 0.3s;
-    padding:15px;
-    box-sizing:border-box;
-    z-index:1000;
+    width:360px; max-width:80%; background:#f0f0f0; overflow-y:auto;
+    position:fixed; left:-360px; top:0; bottom:0; transition:left 0.3s;
+    padding:15px; box-sizing:border-box; z-index:1000;
   }
   #sidebar.open { left:0; }
-
   #toggleBtn {
-    position:fixed;
-    top:10px;
-    left:0;
-    z-index:1100;
-    padding:6px 12px;
-    background:#3498db;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-    border-radius:3px;
-    font-size:14px;
-    transition:left 0.3s;
+    position:fixed; top:10px; left:0; z-index:1100; padding:6px 12px;
+    background:#3498db; color:#fff; border:none; cursor:pointer; border-radius:3px;
   }
-  #toggleBtn.open { left:360px; }
-
-  h2 { margin-top:0; }
-
-  .category { margin-top:20px; }
-  .category h3 {
-    margin-bottom:10px;
-    border-bottom:1px solid #ccc;
-    padding-bottom:4px;
-    font-size:16px;
-    color:#333;
-  }
-
-  .item { 
-    margin-bottom: 15px; 
-    padding: 10px; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-    background-color:#fff; 
-    color:#333; 
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .item:hover { transform: scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
-  .item.selected { transform: scale(1.05); box-shadow:0 6px 12px rgba(0,0,0,0.3); }
-
+  .item { margin-bottom: 15px; padding:10px; border-radius:5px; cursor:pointer;
+          box-shadow:0 1px 3px rgba(0,0,0,0.1); background:#fff; transition:0.2s; }
+  .item:hover { transform:scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
   .item img { width:100%; border-radius:4px; margin-bottom:8px; }
-  .item .title { font-size:16px; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; }
-  .item p { margin:0; font-size:14px; line-height:1.3; }
-
-  @media(max-width:768px){
-    body { flex-direction: column; }
-    #sidebar { width:100%; left:-100%; }
-    #sidebar.open { left:0; }
-    #map { height:50vh; }
-    #toggleBtn.open { left:0; }
-  }
+  .title { font-weight:bold; margin-bottom:4px; }
 </style>
 </head>
 <body>
 
 <button id="toggleBtn" onclick="toggleSidebar()">☰ マナー啓発</button>
 <div id="sidebar">
-  <h2>マナー啓発 & 混雑状況 / Manners & Crowd</h2>
+  <h2>マナー啓発 / Manners</h2>
   <div id="list"></div>
 </div>
 <div id="map"></div>
 
 <script>
 var sidebarOpen = false;
-var sidebar = document.getElementById('sidebar');
-var toggleBtn = document.getElementById('toggleBtn');
-
 function toggleSidebar() {
   sidebarOpen = !sidebarOpen;
-  sidebar.classList.toggle('open', sidebarOpen);
-  toggleBtn.classList.toggle('open', sidebarOpen);
+  document.getElementById('sidebar').classList.toggle('open', sidebarOpen);
 }
 
 // マップ作成
 var map = L.map('map').setView([35.3198, 139.5520], 17);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
 
-// マナー啓発データ＋混雑状況
+// 混雑度と色の対応
+var levels = ["low","medium","high"];
+var levelColors = {low:"green", medium:"orange", high:"red"};
+
+// デモデータ
 var points = [
-  {lat:35.319376, lng:139.551265, titleJP:"ゴミは持ち帰ろう", titleEN:"Take your trash home",
-   detailJP:"入口付近ではゴミは必ず持ち帰りましょう。", detailEN:"Please take your trash home at the entrance area.",
-   level:"high", crowd:"low",
-   img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg",
-   category:"ゴミ・環境 / Trash & Environment"},
-  {lat:35.320342, lng:139.551733, titleJP:"飲食は休憩所で", titleEN:"Eat/drink in rest areas",
-   detailJP:"歩きながらの飲食は控えましょう。", detailEN:"Avoid eating or drinking while walking.",
-   level:"medium", crowd:"high",
-   img:"https://cdn.pixabay.com/photo/2017/08/10/03/25/eating-2611922_960_720.jpg",
-   category:"飲食 / Food & Drink"},
-  {lat:35.322364, lng:139.552682, titleJP:"ペットはリード必須", titleEN:"Pets must be leashed",
-   detailJP:"通りではペットは必ずリードをつけ、糞は持ち帰りましょう。", detailEN:"Pets must be on a leash and clean up after them.",
-   level:"high", crowd:"medium",
-   img:"https://cdn.pixabay.com/photo/2016/11/29/10/07/dog-1868085_960_720.jpg",
-   category:"ペット / Pets"},
-  {lat:35.324273, lng:139.553724, titleJP:"撮影マナー", titleEN:"Photo manners",
-   detailJP:"他人を写さないよう配慮し、建物内は許可を得て撮影しましょう。", detailEN:"Be considerate not to photograph others. Obtain permission indoors.",
-   level:"medium", crowd:"medium",
-   img:"https://cdn.pixabay.com/photo/2015/09/05/21/51/tourist-926051_960_720.jpg",
-   category:"写真・観光マナー / Photo & Tourism"},
-  {lat:35.321500, lng:139.552000, titleJP:"交通安全", titleEN:"Traffic safety",
-   detailJP:"歩行者専用エリアを守り、通行の妨げにならないようにしましょう。", detailEN:"Follow pedestrian zones and avoid blocking paths.",
-   level:"high", crowd:"high",
-   img:"https://cdn.pixabay.com/photo/2016/11/29/02/11/traffic-1868401_960_720.jpg",
-   category:"交通・安全 / Traffic & Safety"},
-  {lat:35.323000, lng:139.553000, titleJP:"地域配慮", titleEN:"Community consideration",
-   detailJP:"大声で騒がず、地元商店や住民への配慮を忘れないように。", detailEN:"Do not make loud noise and respect local shops and residents.",
-   level:"medium", crowd:"low",
-   img:"https://cdn.pixabay.com/photo/2016/03/31/19/41/friends-1295130_960_720.jpg",
-   category:"地域配慮 / Community"}
+  {lat:35.319376, lng:139.551265, title:"ゴミは持ち帰ろう", detail:"入口付近ではゴミは必ず持ち帰りましょう。", level:"low"},
+  {lat:35.320342, lng:139.551733, title:"飲食は休憩所で", detail:"歩きながらの飲食は控えましょう。", level:"medium"},
+  {lat:35.322364, lng:139.552682, title:"ペットはリード必須", detail:"ペットは必ずリードをつけましょう。", level:"high"}
 ];
 
-var listDiv = document.getElementById("list");
-var categories = {};
-points.forEach(function(point){
-  if(!categories[point.category]) categories[point.category] = [];
-  categories[point.category].push(point);
-});
-
-// アイコン色を混雑状況で決定
-function getIcon(level, crowd){
-  var color;
-  if(crowd==="high") color="red";
-  else if(crowd==="medium") color="orange";
-  else color="green";
-
+// マーカー作成用関数
+function getIcon(level){
   return L.icon({
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-" + color + ".png",
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-" + levelColors[level] + ".png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     iconSize: [25,41],
     iconAnchor: [12,41],
@@ -161,45 +69,36 @@ function getIcon(level, crowd){
   });
 }
 
-// サイドバー作成
-for(var cat in categories){
-  var catDiv = document.createElement("div");
-  catDiv.className = "category";
-  catDiv.innerHTML = `<h3>${cat}</h3>`;
+// サイドバーとマーカー
+var listDiv = document.getElementById("list");
+points.forEach(function(point){
+  var marker = L.marker([point.lat, point.lng], {icon:getIcon(point.level)}).addTo(map)
+    .bindPopup("<b>"+point.title+"</b><br>"+point.detail+"<br>混雑度: "+point.level);
 
-  categories[cat].forEach(function(point){
-    var marker = L.marker([point.lat, point.lng], {icon:getIcon(point.level, point.crowd)}).addTo(map)
-      .bindPopup(`<b>${point.titleJP}</b><br>${point.detailJP}<hr>
-                  <b>${point.titleEN}</b><br>${point.detailEN}<br>
-                  <b>混雑状況 / Crowd:</b> ${point.crowd}`);
-    
-    var item = document.createElement("div");
-    item.className = "item";
-    item.innerHTML = `<img src="${point.img}" alt="${point.titleJP}">
-      <div class="title">${point.titleJP} / ${point.titleEN}</div>
-      <p>${point.detailJP}<br>${point.detailEN}<br>
-      <b>混雑状況 / Crowd:</b> ${point.crowd}</p>`;
-    
-    item.addEventListener("click", function(){
-      document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
-      this.classList.add("selected");
-      map.setView([point.lat, point.lng],18);
-      marker.openPopup();
-    });
-
-    catDiv.appendChild(item);
+  var item = document.createElement("div");
+  item.className="item";
+  item.innerHTML = `<div class="title">${point.title}</div><p>${point.detail}</p><button>混雑度: ${point.level}</button>`;
+  
+  var btn = item.querySelector("button");
+  btn.addEventListener("click", function(){
+    // レベル更新
+    var idx = levels.indexOf(point.level);
+    idx = (idx+1)%levels.length;
+    point.level = levels[idx];
+    // ボタン表示更新
+    btn.textContent = "混雑度: "+point.level;
+    // マーカー色更新
+    marker.setIcon(getIcon(point.level));
+    marker.setPopupContent("<b>"+point.title+"</b><br>"+point.detail+"<br>混雑度: "+point.level);
   });
 
-  listDiv.appendChild(catDiv);
-}
+  item.addEventListener("click", function(){
+    map.setView([point.lat, point.lng],18);
+    marker.openPopup();
+  });
 
-// ルート
-L.polyline([
-  [35.319414,139.551258],
-  [35.320386,139.551759],
-  [35.322326,139.552674],
-  [35.324286,139.553731]
-], { color:'#ff0000', weight:8, opacity:0.5, dashArray:'10,10' }).addTo(map);
+  listDiv.appendChild(item);
+});
 
 // ズーム固定
 map.scrollWheelZoom.disable();
@@ -209,6 +108,7 @@ map.boxZoom.disable();
 map.keyboard.disable();
 map.setMinZoom(17);
 map.setMaxZoom(17);
+
 </script>
 </body>
 </html>
