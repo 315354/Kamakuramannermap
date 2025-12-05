@@ -1,34 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Kamakura Map - 永続化版</title>
+<meta charset="utf-8" />
+<title>Kamakura Map - 店舗投稿版</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 html, body { margin:0; padding:0; height:100%; font-family:sans-serif; }
 body { display:flex; }
-#map { flex:1; height:100vh; transition: margin-right 0.3s; }
+#map { flex:1; height:100vh; }
 #sidebar {
-  width:400px; max-width:80%;
-  background:#f0f0f0; overflow-y:auto;
-  position:fixed; right:0; top:0; bottom:0;
-  padding:15px; box-sizing:border-box; z-index:1000;
-  transition: transform 0.3s;
-}
-#sidebar.closed { transform: translateX(100%); }
-#toggleSidebar {
-  position:absolute; top:10px; left:-30px; width:30px; height:30px;
-  background:#3498db; color:#fff; font-weight:bold; text-align:center; line-height:30px;
-  cursor:pointer; border-radius:3px; z-index:1100;
+  width:360px;
+  max-width:80%;
+  background:#f0f0f0;
+  overflow-y:auto;
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  padding:15px;
+  box-sizing:border-box;
+  z-index:1000;
 }
 h2 { margin-top:0; }
-.item { margin-bottom:15px; padding:10px; border-radius:5px; cursor:pointer;
-       box-shadow:0 1px 3px rgba(0,0,0,0.1); background:#fff; transition: transform 0.2s;}
-.item:hover { transform:scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
-.item.selected { transform:scale(1.05); box-shadow:0 6px 12px rgba(0,0,0,0.3);}
+.category { margin-top:20px; }
+.category h3 { margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:4px; font-size:16px; color:#333; }
+.item { margin-bottom: 15px; padding: 10px; border-radius: 5px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background-color:#fff; color:#333; transition: transform 0.2s, box-shadow 0.2s;}
+.item:hover { transform: scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+.item.selected { transform: scale(1.05); box-shadow:0 6px 12px rgba(0,0,0,0.3); }
 .item img { width:100%; border-radius:4px; margin-bottom:8px; }
-.item .title { font-size:16px; font-weight:bold; margin-bottom:4px; }
+.item .title { font-size:16px; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; }
 .item p { margin:0; font-size:14px; line-height:1.3; }
 #form { margin-top:20px; border-top:1px solid #ccc; padding-top:10px;}
 #form input, #form textarea { width:100%; margin-bottom:6px; padding:6px; box-sizing:border-box;}
@@ -38,77 +39,60 @@ h2 { margin-top:0; }
 <body>
 
 <div id="map"></div>
+
 <div id="sidebar">
-  <div id="toggleSidebar">×</div>
-  <h2>店舗マナー / Store Manners</h2>
+  <h2>マナー啓発 / Manners</h2>
   <div id="list"></div>
+
   <div id="form">
-    <h3>店舗情報・マナーを追加</h3>
-    <input id="storeName" placeholder="店舗名">
-    <input id="address" placeholder="住所">
-    <input id="contact" placeholder="連絡先">
-    <input id="titleJP" placeholder="マナータイトル（日本語）">
+    <h3>マナーを追加</h3>
+    <input id="titleJP" placeholder="タイトル（日本語）">
     <input id="titleEN" placeholder="Title (EN)">
-    <input id="lat" placeholder="緯度" type="number" step="0.000001">
-    <input id="lng" placeholder="経度" type="number" step="0.000001">
+    <input id="lat" placeholder="緯度 (例: 35.320)" type="number" step="0.000001">
+    <input id="lng" placeholder="経度 (例: 139.552)" type="number" step="0.000001">
     <input id="img" placeholder="画像URL">
-    <textarea id="detailJP" placeholder="マナー説明（日本語）"></textarea>
+    <textarea id="detailJP" placeholder="説明（日本語）"></textarea>
     <textarea id="detailEN" placeholder="Description (EN)"></textarea>
-    <button onclick="addStoreFromForm()">追加</button>
+    <button onclick="addManner()">追加</button>
   </div>
 </div>
 
 <script>
-// -------------------- マップ作成 --------------------
+// マップ作成
 var map = L.map('map').setView([35.3198, 139.5520], 17);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
 
 var listDiv = document.getElementById("list");
-var stores = [];
+var points = [];
 
-// -------------------- サイドバー折りたたみ --------------------
-var sidebar = document.getElementById("sidebar");
-var toggleBtn = document.getElementById("toggleSidebar");
-toggleBtn.addEventListener("click", function(){
-  sidebar.classList.toggle("closed");
-});
-
-// -------------------- 店舗追加関数 --------------------
-function addStore(data, save=true){
-  var marker = L.marker([data.lat, data.lng]).addTo(map)
-    .bindPopup(`<b>${data.storeName}</b><br>${data.address}<br>${data.contact}<hr>
-                <b>${data.titleJP}</b><br>${data.detailJP}<hr>
-                <b>${data.titleEN}</b><br>${data.detailEN}`);
+// カード＆マーカー追加関数
+function addPoint(point){
+  var marker = L.marker([point.lat, point.lng]).addTo(map)
+    .bindPopup(`<b>${point.titleJP}</b><br>${point.detailJP}<hr><b>${point.titleEN}</b><br>${point.detailEN}`);
 
   var item = document.createElement("div");
   item.className = "item";
-  item.innerHTML = `<img src="${data.img}" alt="${data.storeName}">
-    <div class="title">${data.storeName}</div>
-    <p>${data.address}<br>${data.contact}<br>
-    <b>${data.titleJP}</b>: ${data.detailJP}<br>
-    <b>${data.titleEN}</b>: ${data.detailEN}</p>`;
+  item.innerHTML = `<img src="${point.img}" alt="${point.titleJP}">
+  <div class="title">${point.titleJP} / ${point.titleEN}</div>
+  <p>${point.detailJP}<br>${point.detailEN}</p>`;
 
   item.addEventListener("click", function(){
     document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
     this.classList.add("selected");
-    map.setView([data.lat, data.lng],18);
+    map.setView([point.lat, point.lng],18);
     marker.openPopup();
   });
 
   listDiv.appendChild(item);
-  stores.push(data);
-
-  if(save){
-    localStorage.setItem("stores", JSON.stringify(stores));
-  }
+  points.push(point);
 }
 
-// -------------------- フォーム追加 --------------------
-function addStoreFromForm(){
-  var data = {
-    storeName: document.getElementById("storeName").value,
-    address: document.getElementById("address").value,
-    contact: document.getElementById("contact").value,
+// 初期サンプルポイント
+addPoint({lat:35.319376, lng:139.551265, titleJP:"ゴミは持ち帰ろう", titleEN:"Take your trash home", detailJP:"入口付近ではゴミは必ず持ち帰りましょう。", detailEN:"Please take your trash home.", img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg"});
+
+// フォームから追加
+function addManner(){
+  var point = {
     titleJP: document.getElementById("titleJP").value,
     titleEN: document.getElementById("titleEN").value,
     lat: parseFloat(document.getElementById("lat").value),
@@ -117,16 +101,13 @@ function addStoreFromForm(){
     detailJP: document.getElementById("detailJP").value,
     detailEN: document.getElementById("detailEN").value
   };
-  if(!data.storeName || !data.lat || !data.lng){
-    alert("店舗名と座標は必須です！");
+  if(!point.titleJP || !point.lat || !point.lng){
+    alert("タイトルと座標は必須です！");
     return;
   }
-  addStore(data);
+  addPoint(point);
 
-  // フォームリセット
-  document.getElementById("storeName").value="";
-  document.getElementById("address").value="";
-  document.getElementById("contact").value="";
+  // フォームをリセット
   document.getElementById("titleJP").value="";
   document.getElementById("titleEN").value="";
   document.getElementById("lat").value="";
@@ -135,31 +116,8 @@ function addStoreFromForm(){
   document.getElementById("detailJP").value="";
   document.getElementById("detailEN").value="";
 }
-
-// -------------------- LocalStorageから読み込み --------------------
-window.addEventListener("load", function(){
-  var saved = localStorage.getItem("stores");
-  if(saved){
-    JSON.parse(saved).forEach(function(s){
-      addStore(s, false);
-    });
-  } else {
-    // 初期サンプル
-    addStore({
-      storeName:"小町通り入口ゴミ注意",
-      address:"鎌倉市小町通",
-      contact:"-",
-      titleJP:"ゴミは持ち帰ろう",
-      titleEN:"Take your trash home",
-      lat:35.319376,
-      lng:139.551265,
-      img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg",
-      detailJP:"入口付近ではゴミは必ず持ち帰りましょう。",
-      detailEN:"Please take your trash home at the entrance."
-    });
-  }
-});
 </script>
 
 </body>
 </html>
+
