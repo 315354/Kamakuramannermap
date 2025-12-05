@@ -44,11 +44,26 @@ button { margin:5px; padding:5px 10px; font-size:14px; }
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const map = L.map('map', { zoomControl:true });
+const map = L.map('map', { zoomControl:true }).setView([35.3218, 139.5525],17);
 
 // OSMタイル
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
  attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// 小町通りライン（灰色破線）
+const komachiLine = [
+  [35.3194, 139.5512],
+  [35.3204, 139.5517],
+  [35.3218, 139.5525],
+  [35.3224, 139.5527],
+  [35.3242, 139.5537]
+];
+L.polyline(komachiLine, {
+  color: 'gray',
+  weight: 5,
+  opacity: 0.4,
+  dashArray: '5,10'
 }).addTo(map);
 
 const texts = {
@@ -61,25 +76,6 @@ const texts = {
     congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"}
   }
 };
-
-// 小町通りライン（灰色破線）
-const komachiLine = [
-  [35.3194, 139.5512],
-  [35.3204, 139.5517],
-  [35.3218, 139.5525],
-  [35.3224, 139.5527],
-  [35.3242, 139.5537]
-];
-const komachiPolyline = L.polyline(komachiLine, {
-  color: 'gray',
-  weight: 5,
-  opacity: 0.4,
-  dashArray: '5,10'
-}).addTo(map);
-
-// マップの初期表示で小町通り全体を画面に収める
-map.fitBounds(komachiPolyline.getBounds().pad(0.2));
-
 
 // スポット情報
 const spots = [
