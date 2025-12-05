@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>小町通り 混雑マップ（時間帯切替）</title>
+  <title>小町通り 混雑マップ（スポット番号付き・時間帯切替）</title>
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -24,6 +24,12 @@
       margin-right: 5px;
       vertical-align: middle;
     }
+    .marker-label {
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      line-height: 24px;
+    }
   </style>
 </head>
 <body>
@@ -42,17 +48,37 @@
 
 <script>
   // マップ作成
-  const map = L.map('map').setView([35.311, 139.550], 17);
+  const map = L.map('map').setView([35.321, 139.552], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // 時間帯ごとの混雑データ
+  // 4スポットの時間帯ごとの混雑データ
   const congestionData = {
-    "平日昼": [{lat:35.311,lng:139.550,level:"やや混雑"}],
-    "平日夕方": [{lat:35.311,lng:139.552,level:"混雑"}],
-    "休日昼": [{lat:35.312,lng:139.551,level:"混雑"}],
-    "休日夕方": [{lat:35.310,lng:139.549,level:"やや混雑"}]
+    "平日昼": [
+      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"スポット1"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"スポット2"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"空き", name:"スポット3"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"スポット4"}
+    ],
+    "平日夕方": [
+      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"スポット1"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"スポット2"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"スポット3"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"スポット4"}
+    ],
+    "休日昼": [
+      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"スポット1"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"スポット2"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"混雑", name:"スポット3"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"スポット4"}
+    ],
+    "休日夕方": [
+      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"スポット1"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"スポット2"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"スポット3"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"スポット4"}
+    ]
   };
 
   // 現在表示中のマーカー
@@ -77,9 +103,22 @@
         radius: 15,
         fillColor: getColor(item.level),
         color: getColor(item.level),
-        fillOpacity: 0.7
-      }).bindPopup(`<b>${time}</b><br>混雑度: ${item.level}`).addTo(map);
+        fillOpacity: 0.9
+      }).addTo(map);
+
+      marker.bindPopup(`<b>${item.name}</b><br>${time}<br>混雑度: ${item.level}`);
+
+      // マーカーに番号ラベル追加
+      const label = L.divIcon({
+        className: 'marker-label',
+        html: item.name.replace("スポット",""),
+        iconSize: [24,24],
+        iconAnchor: [12,12]
+      });
+      const labelMarker = L.marker([item.lat,item.lng], {icon: label}).addTo(map);
+
       currentMarkers.push(marker);
+      currentMarkers.push(labelMarker);
     });
   }
 
@@ -99,7 +138,9 @@
     return div;
   };
   legend.addTo(map);
+
 </script>
 
 </body>
 </html>
+
