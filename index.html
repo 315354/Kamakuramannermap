@@ -20,7 +20,9 @@
 <div id="map"></div>
 
 <script>
-  
+
+  // マップ作成（←消えてた部分！）
+  var map = L.map('map').setView([35.3198, 139.5520], 17);
 
   // タイル（地図本体）
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -28,16 +30,12 @@
   }).addTo(map);
 
   // 入口のピン
-L.marker([35.31937618166221, 139.55126514790774])
-  .addTo(map)
-  .bindPopup("小町通り 入口");
-
-
-  // サンプルピン
-
-
+  L.marker([35.31937618166221, 139.55126514790774])
+    .addTo(map)
+    .bindPopup("小町通り 入口");
 
 </script>
 
 </body>
 </html>
+
