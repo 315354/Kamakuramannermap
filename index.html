@@ -28,14 +28,16 @@
     maxZoom: 19
   }).addTo(map);
 
+  // 入口のピン
+L.marker([35.31937618166221, 139.55126514790774])
+  .addTo(map)
+  .bindPopup("小町通り 入口");
+
+
   // サンプルピン
   L.marker([35.3219, 139.5530])
     .addTo(map)
     .bindPopup("小町通り・中央地点");
- // JR駅側 入口ピン（あなたが指定した位置）
-L.marker([35.31937618166221, 139.55126514790774])
-  .addTo(map)
-  .bindPopup("Komachi-dori 入口（駅側）");
 
 
 </script>
