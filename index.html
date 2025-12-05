@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>小町通り 混雑マップ（店舗・スポット分け・ラベル付き）</title>
+<title>小町通り 混雑マップ（固定マナー表示）</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 body { margin:0; padding:0; font-family:sans-serif; }
@@ -19,7 +19,7 @@ button { margin:5px; padding:5px 10px; font-size:14px; }
 .marker-label {
   font-weight:bold; color:white; text-align:center; line-height:24px; 
 }
-#tips { text-align:center; padding:6px; font-size:14px; background:#ffffe0; border-top:1px solid #ccc; }
+#tips { text-align:center; padding:10px; font-size:14px; background:#ffffe0; border-top:1px solid #ccc; min-height:50px; }
 </style>
 </head>
 <body>
@@ -111,7 +111,7 @@ function showTime(time){
     const marker=L.circleMarker([spot.lat,spot.lng],{
       radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9
     }).addTo(map);
-    marker.bindPopup(`<b>${spot.name}</b><br>${time}<br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`);
+    marker.on('click',()=>{ document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`; });
 
     const label=L.divIcon({
       className:'marker-label',
@@ -124,21 +124,13 @@ function showTime(time){
   });
 
   // 店舗
-  stores.forEach((store,i)=>{
+  stores.forEach(store=>{
     const marker=L.circleMarker([store.lat,store.lng],{
       radius:18, fillColor:"blue", color:"blue", fillOpacity:0.9
     }).addTo(map);
-    marker.bindPopup(`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`);
+    marker.on('click',()=>{ document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`; });
 
-    // 店舗番号ラベル
-    const label=L.divIcon({
-      className:'marker-label',
-      html:(spots.length + i + 1), // 番号をスポットと重複しないように
-      iconSize:[24,24], iconAnchor:[12,12]
-    });
-    const labelMarker=L.marker([store.lat,store.lng],{icon:label}).addTo(map);
-
-    currentMarkers.push(marker,labelMarker);
+    currentMarkers.push(marker);
   });
 }
 
