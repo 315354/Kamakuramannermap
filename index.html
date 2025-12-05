@@ -2,27 +2,24 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>小町通り 混雑マップ</title>
+<title>小町通り 混雑マップ（スマホ向け）</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 body { margin:0; font-family:sans-serif; background:#f7f7f7; }
-header { background:#ffcc33; padding:20px; text-align:center; font-size:24px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
-#controls { text-align:center; padding:10px; }
-button { margin:5px; padding:8px 16px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
+header { background:#ffcc33; padding:15px; text-align:center; font-size:22px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+#controls { text-align:center; padding:5px; }
+button { margin:3px; padding:6px 12px; font-size:14px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
 button:hover { background:#45a049;}
-#map { height:80vh; margin:0 auto; max-width:900px; border:2px solid #ccc; border-radius:8px; }
-#tips { max-width:900px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:15px; min-height:90px; }
-.legend { background:white; padding:10px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3);}
+#map { height:90vh; margin:0 auto; max-width:100%; border:2px solid #ccc; border-radius:8px; }
+#tips { max-width:100%; margin:5px auto; padding:8px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:15px; min-height:60px; }
+.legend { background:white; padding:8px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3); font-size:14px;}
 .legend span { display:inline-block; width:12px; height:12px; margin-right:5px; vertical-align:middle; }
-.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; font-size:14px; }
+.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; font-size:12px; }
 
-/* スマホ対応 */
 @media (max-width:480px){
-  header { font-size:20px; padding:18px; }
-  button { padding:14px 20px; font-size:18px; }
-  #map { height:85vh; }
-  #tips { font-size:16px; min-height:100px; }
-  .marker-label { font-size:16px; line-height:28px; }
+  #map { height:95vh; }
+  #tips { font-size:16px; min-height:60px; }
+  header { font-size:20px; padding:12px; }
 }
 </style>
 </head>
@@ -111,7 +108,15 @@ function showTime(time){
 setLanguage('ja');
 
 const legend=L.control({position:'bottomright'});
-legend.onAdd=function(){const div=L.DomUtil.create('div','legend'); div.innerHTML=`<b>混雑目安</b><br><span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br><span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br><span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br><span style="background:blue"></span>店舗`; return div;};
+legend.onAdd=function(){
+  const div=L.DomUtil.create('div','legend'); 
+  div.innerHTML=`<b>混雑目安</b><br>
+  <span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br>
+  <span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br>
+  <span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br>
+  <span style="background:blue"></span>店舗`;
+  return div;
+};
 legend.addTo(map);
 </script>
 </body>
