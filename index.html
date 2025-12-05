@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Kamakura Map - 折りたたみ版</title>
+<title>Kamakura Map - 永続化版</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -54,7 +54,7 @@ h2 { margin-top:0; }
     <input id="img" placeholder="画像URL">
     <textarea id="detailJP" placeholder="マナー説明（日本語）"></textarea>
     <textarea id="detailEN" placeholder="Description (EN)"></textarea>
-    <button onclick="addStore()">追加</button>
+    <button onclick="addStoreFromForm()">追加</button>
   </div>
 </div>
 
@@ -74,7 +74,7 @@ toggleBtn.addEventListener("click", function(){
 });
 
 // -------------------- 店舗追加関数 --------------------
-function addStore(data){
+function addStore(data, save=true){
   var marker = L.marker([data.lat, data.lng]).addTo(map)
     .bindPopup(`<b>${data.storeName}</b><br>${data.address}<br>${data.contact}<hr>
                 <b>${data.titleJP}</b><br>${data.detailJP}<hr>
@@ -97,10 +97,14 @@ function addStore(data){
 
   listDiv.appendChild(item);
   stores.push(data);
+
+  if(save){
+    localStorage.setItem("stores", JSON.stringify(stores));
+  }
 }
 
 // -------------------- フォーム追加 --------------------
-function addStore(){
+function addStoreFromForm(){
   var data = {
     storeName: document.getElementById("storeName").value,
     address: document.getElementById("address").value,
@@ -132,18 +136,28 @@ function addStore(){
   document.getElementById("detailEN").value="";
 }
 
-// -------------------- 初期サンプル --------------------
-addStore({
-  storeName:"小町通り入口ゴミ注意",
-  address:"鎌倉市小町通",
-  contact:"-",
-  titleJP:"ゴミは持ち帰ろう",
-  titleEN:"Take your trash home",
-  lat:35.319376,
-  lng:139.551265,
-  img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg",
-  detailJP:"入口付近ではゴミは必ず持ち帰りましょう。",
-  detailEN:"Please take your trash home at the entrance."
+// -------------------- LocalStorageから読み込み --------------------
+window.addEventListener("load", function(){
+  var saved = localStorage.getItem("stores");
+  if(saved){
+    JSON.parse(saved).forEach(function(s){
+      addStore(s, false);
+    });
+  } else {
+    // 初期サンプル
+    addStore({
+      storeName:"小町通り入口ゴミ注意",
+      address:"鎌倉市小町通",
+      contact:"-",
+      titleJP:"ゴミは持ち帰ろう",
+      titleEN:"Take your trash home",
+      lat:35.319376,
+      lng:139.551265,
+      img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg",
+      detailJP:"入口付近ではゴミは必ず持ち帰りましょう。",
+      detailEN:"Please take your trash home at the entrance."
+    });
+  }
 });
 </script>
 
