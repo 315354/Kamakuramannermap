@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 body { margin:0; font-family:sans-serif; background:#f7f7f7; }
-header { background:#ffcc33; padding:20px; text-align:center; font-size:26px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+header { background:#ffcc33; padding:20px; text-align:center; font-size:24px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
 #controls { text-align:center; padding:10px; }
-button { margin:5px; padding:10px 16px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
+button { margin:5px; padding:12px 18px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
 button:hover { background:#45a049;}
-#map { height:80vh; width:95%; max-width:1000px; margin:0 auto; border:2px solid #ccc; border-radius:8px; }
-#tips { width:95%; max-width:1000px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:16px; min-height:60px; }
+#map { height:80vh; margin:0 auto; max-width:1000px; border:2px solid #ccc; border-radius:8px; }
+#tips { max-width:1000px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:16px; min-height:60px; }
 .legend { background:white; padding:10px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3);}
-.legend span, .legend img { vertical-align:middle; margin-right:5px; }
+.legend span { display:inline-block; width:16px; height:16px; margin-right:5px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -38,16 +38,30 @@ button:hover { background:#45a049;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const map = L.map('map', { center: [35.3219, 139.5525], zoom: 17, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false });
+// マップ初期化（小町通り中心、固定表示）
+const map = L.map('map',{
+  center:[35.3219,139.5525],
+  zoom:17,
+  dragging:false,
+  scrollWheelZoom:false,
+  doubleClickZoom:false,
+  boxZoom:false,
+  keyboard:false,
+  tap:false
+});
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap contributors' }).addTo(map);
+// タイル
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
 
+// 言語テキスト
 const texts = {
-  ja: { mapTips:"⚠️ 小町通りを歩くときのマナー：歩行中はスマホを見ずに周りに注意、ゴミは持ち帰りましょう。", congestionLegend:{"混雑":"混雑","やや混雑":"やや混雑","空き":"空き"} },
-  en: { mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.", congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"} }
+  ja:{ mapTips:"⚠️ 小町通りを歩くときのマナー：歩行中はスマホを見ずに周りに注意、ゴミは持ち帰りましょう。", congestionLegend:{"混雑":"混雑","やや混雑":"やや混雑","空き":"空き"} },
+  en:{ mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.", congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"} }
 };
 
-// スポット
+// マーカー情報
 const spots = [
   {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
   {lat:35.320434,lng:139.551728,name:"スポット2",tips:{ja:"ゴミは必ず持ち帰ろう",en:"Take your trash home"}},
@@ -55,37 +69,48 @@ const spots = [
   {lat:35.324279,lng:139.553704,name:"スポット4",tips:{ja:"歩きスマホ禁止",en:"No smartphone while walking"}}
 ];
 
-// 店舗（青家アイコン）
+// 店舗情報（家アイコン）
 const stores = [
   {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"}},
   {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",en:"- Take trash home after buying chocolate<br>- Follow queue and share space"}},
   {lat:35.32287228279184,lng:139.5530859746436,name:"鎌倉茶々本店 Kamakura ChaCha",tips:{ja:"・行列に並ぶときは前後の人に注意<br>・ゴミは必ず持ち帰りましょう<br>・ペット同伴は抱っこで",en:"- Watch people before/after in line<br>- Take trash home<br>- Hold pets"}},
   {lat:35.3218792159195,lng:139.55255664628976,name:"鎌倉着物レンタル和楽",tips:{ja:"・レンタル時の着物は丁寧に扱いましょう<br>・混雑時は順番を守りましょう",en:"- Handle rented kimono carefully<br>- Follow the queue during busy times"}},
   {lat:35.3197672004631,lng:139.55136766056182,name:"鎌倉茶々 小町通り店",tips:{ja:"・混雑時は譲り合いましょう<br>・ゴミは持ち帰りましょう",en:"- Share space during busy times<br>- Take trash home"}},
-  {lat:35.32007273184751, lng:139.55150959304396, name:"みっふぃーおやつ堂 鎌倉店", tips:{ja:"・混雑時は譲り合いましょう<br>・ゴミは持ち帰りましょう", en:"- Share space during busy times<br>- Take trash home"}},
-  {lat:35.320750889098726, lng:139.5520160135588, name:"鎌倉屋台村", tips:{ja:"・混雑時は譲り合いましょう<br>・ゴミは持ち帰りましょう", en:"- Share space during busy times<br>- Take trash home"}},
-  {lat:35.32258573248422, lng:139.55293437984895, name:"コクリコクレープ 本店", tips:{ja:"・混雑時は譲り合いましょう<br>・ゴミは持ち帰りましょう", en:"- Share space during busy times<br>- Take trash home"}}
+  {lat:35.32007273184751,lng:139.55150959304396,name:"みっふぃーおやつ堂 鎌倉店",tips:{ja:"・順番を守りましょう<br>・ゴミは持ち帰りましょう",en:"- Follow the queue<br>- Take trash home"}},
+  {lat:35.320750889098726,lng:139.5520160135588,name:"鎌倉屋台村",tips:{ja:"・混雑時は譲り合いましょう<br>・ゴミは持ち帰りましょう",en:"- Share space during busy times<br>- Take trash home"}},
+  {lat:35.32258573248422,lng:139.55293437984895,name:"コクリコクレープ 本店",tips:{ja:"・順番を守りましょう<br>・ゴミは持ち帰りましょう",en:"- Follow the queue<br>- Take trash home"}}
 ];
 
-// 給水スポット（水滴アイコン）
+// 給水スポット（しずくアイコン）
 const waters = [
-  {lat:35.319477117221005, lng:139.55001555421586, name:"鎌倉駅西口駅前時計台広場"},
-  {lat:35.31938714680836, lng:139.54695063887323, name:"鎌倉市役所本庁舎（1階ロビー前）"},
-  {lat:35.319170547230506, lng:139.54766621188725, name:"鎌倉市役所第６分庁舎"},
-  {lat:35.31671872408983, lng:139.549846267709, name:"面白法人カヤック ぼくらの会議棟"}
+  {lat:35.319477117221005,lng:139.55001555421586,name:"鎌倉駅西口駅前時計台広場"},
+  {lat:35.31938714680836,lng:139.54695063887323,name:"鎌倉市役所本庁舎（1階ロビー前）"},
+  {lat:35.319170547230506,lng:139.54766621188725,name:"鎌倉市役所第６分庁舎"},
+  {lat:35.31671872408983,lng:139.549846267709,name:"面白法人カヤック ぼくらの会議棟"}
 ];
 
+// 家アイコン（無料フリー素材）
+const houseIcon = L.icon({
+  iconUrl:'https://cdn-icons-png.flaticon.com/512/69/69524.png',
+  iconSize:[32,32],
+  iconAnchor:[16,32]
+});
+// しずくアイコン
+const waterIcon = L.icon({
+  iconUrl:'https://cdn-icons-png.flaticon.com/512/1046/1046784.png',
+  iconSize:[32,32],
+  iconAnchor:[16,32]
+});
+
+// 混雑レベル
 const congestionLevels = { "平日昼":["やや混雑","やや混雑","空き","空き"], "平日夕方":["混雑","混雑","やや混雑","やや混雑"], "休日昼":["混雑","混雑","混雑","やや混雑"], "休日夕方":["やや混雑","やや混雑","やや混雑","空き"] };
 
 let currentMarkers=[],currentLanguage='ja',currentTime='平日昼';
-
 function getColor(level){ return level==="混雑"?"red":level==="やや混雑"?"orange":"green"; }
 function setLanguage(lang){ currentLanguage=lang; document.getElementById('tips').innerHTML=texts[lang].mapTips; showTime(currentTime); }
-
 function showTime(time){
   currentTime=time;
   currentMarkers.forEach(m=>map.removeLayer(m)); currentMarkers=[];
-  
   // スポット
   spots.forEach((spot,index)=>{
     const level=congestionLevels[time][index];
@@ -93,41 +118,34 @@ function showTime(time){
     marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;});
     currentMarkers.push(marker);
   });
-
-  // 店舗（青い家アイコン）
-  const homeIcon = L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/25/25694.png', iconSize:[32,32], iconAnchor:[16,32]});
+  // 店舗（家アイコン）
   stores.forEach(store=>{
-    const marker=L.marker([store.lat,store.lng],{icon:homeIcon}).addTo(map);
+    const marker=L.marker([store.lat,store.lng],{icon:houseIcon}).addTo(map);
     marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;});
     currentMarkers.push(marker);
   });
-
-  // 給水スポット（水滴アイコン）
-  const waterIcon = L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/606/606685.png', iconSize:[32,32], iconAnchor:[16,32]});
+  // 給水スポット（しずくアイコン）
   waters.forEach(w=>{
     const marker=L.marker([w.lat,w.lng],{icon:waterIcon}).addTo(map);
-    marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${w.name}</b><br>給水スポット`});
+    marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${w.name}</b>`;});
     currentMarkers.push(marker);
   });
 }
 
 setLanguage('ja');
 
+// 凡例
 const legend=L.control({position:'bottomright'});
-legend.onAdd=function(){
-  const div=L.DomUtil.create('div','legend'); 
-  div.innerHTML=`<b>混雑目安</b><br>
-  <span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br>
-  <span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br>
-  <span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br>
-  <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" width="16"> 店舗<br>
-  <img src="https://cdn-icons-png.flaticon.com/512/606/606685.png" width="16"> 給水スポット`;
-  return div;
-};
+legend.onAdd=function(){const div=L.DomUtil.create('div','legend'); div.innerHTML=`
+<b>混雑目安</b><br>
+<span style="background:red"></span>${texts[currentLanguage].congestionLegend["混雑"]}<br>
+<span style="background:orange"></span>${texts[currentLanguage].congestionLegend["やや混雑"]}<br>
+<span style="background:green"></span>${texts[currentLanguage].congestionLegend["空き"]}<br>
+<span style="background:blue"></span>店舗<br>
+<span style="background:skyblue"></span>給水スポット
+`; return div;};
 legend.addTo(map);
 </script>
 </body>
 </html>
-
-
 
