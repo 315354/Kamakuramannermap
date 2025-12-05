@@ -21,10 +21,10 @@
 
 <script>
 
-  // マップ作成（←消えてた部分！）
+  // マップ作成
   var map = L.map('map').setView([35.3198, 139.5520], 17);
 
-  // タイル（地図本体）
+  // タイル
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
   }).addTo(map);
@@ -33,135 +33,48 @@
   L.marker([35.31937618166221, 139.55126514790774])
     .addTo(map)
     .bindPopup("小町通り 大鳥居");
+
   // ピン①
-L.marker([35.320341651344634, 139.55173311917036])
-  .addTo(map)
-  .bindPopup("小町通り商店街");
+  L.marker([35.320341651344634, 139.55173311917036])
+    .addTo(map)
+    .bindPopup("小町通り商店街");
 
-// ピン②
-L.marker([35.32236355002456, 139.5526823859773])
-  .addTo(map)
-  .bindPopup("小町通り");
+  // ピン②
+  L.marker([35.32236355002456, 139.5526823859773])
+    .addTo(map)
+    .bindPopup("小町通り");
 
-// ピン③
-L.marker([35.32427316156263, 139.55372424845376])
-  .addTo(map)
-  .bindPopup("小町通り終点");
+  // ピン③
+  L.marker([35.32427316156263, 139.55372424845376])
+    .addTo(map)
+    .bindPopup("小町通り終点");
 
-// ★★ 入口〜ゴール ルート（4点）を点線で結ぶ ★★
+  // ★★ 入口〜ゴール ルート（4点） ★★
+  L.polyline([
+    [35.31941361172205, 139.55125790932254],
+    [35.3203859270644, 139.55175874988637],
+    [35.3223258256739, 139.55267407920945],
+    [35.32428646062413, 139.5537310633092]
+  ], {
+    color: '#ff0000',
+    weight: 8,
+    opacity: 0.5,
+    dashArray: '10, 10'
+  }).addTo(map);
 
-L.polyline([
-  [35.31941361172205, 139.55125790932254],
-  [35.3203859270644, 139.55175874988637],
-  [35.3223258256739, 139.55267407920945],
-  [35.32428646062413, 139.5537310633092]
-], {
-  color: '#ff0000',     // 薄めの赤（変えたいなら言って！）
-  weight: 8,            // 太さ：8
-  opacity: 0.5,         // 色を薄く
-  dashArray: '10, 10'   // 点線（10px線 → 10px空白）
-}).addTo(map);
+  // ★★ ズーム固定 ★★
+  map.scrollWheelZoom.disable();
+  map.touchZoom.disable();
+  map.doubleClickZoom.disable();
+  map.boxZoom.disable();
+  map.keyboard.disable();
 
-
-// ★★ マップのズーム固定（スクロール拡大などを禁止） ★★
-
-map.scrollWheelZoom.disable();  // マウスホイール拡大禁止
-map.touchZoom.disable();        // スマホ pinch 拡大禁止
-map.doubleClickZoom.disable();  // ダブルタップ禁止
-map.boxZoom.disable();          // ドラッグで拡大禁止
-map.keyboard.disable();         // キーボード操作禁止
-
-// ズームレベル固定（例：17）
-map.setMinZoom(17);
-map.setMaxZoom(17);
-
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <title>小町通りマップ</title>
-
-  <!-- Leaflet 読み込み -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <style>
-    #map {
-      width: 100%;
-      height: 100vh;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="map"></div>
-
-  <script>
-    // --- マップ設定（ズーム固定） ---
-    const map = L.map('map', {
-      zoomControl: false,
-      scrollWheelZoom: false,
-      dragging: true,
-      doubleClickZoom: false,
-      boxZoom: false,
-      touchZoom: false
-    }).setView([35.32532, 139.55002], 17);
-
-    // タイル（背景）
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: ''
-    }).addTo(map);
-
-    // --- 和柄アイコン ---
-    const komachiIcon = L.icon({
-      iconUrl: '0a52b8b4-0e93-4e55-8748-f9e094d04cb1.png',
-      iconSize: [48, 48],
-      iconAnchor: [24, 48],
-      popupAnchor: [0, -40]
-    });
-
-    // --- ピンを置きたい地点 ---
-    const spots = [
-      {
-        name: "小町通り入口（鶴岡八幡宮側）",
-        lat: 35.326115,
-        lng: 139.550090
-      },
-      {
-        name: "小町通り中間",
-        lat: 35.324760,
-        lng: 139.550050
-      },
-      {
-        name: "小町通り出口（駅側）",
-        lat: 35.322980,
-        lng: 139.549950
-      }
-    ];
-
-    // --- ピン追加 ---
-    spots.forEach(s => {
-      L.marker([s.lat, s.lng], { icon: komachiIcon }).addTo(map).bindPopup(s.name);
-    });
-
-    // --- ルート線（点線・太さ8・色薄め） ---
-    const routeCoords = spots.map(s => [s.lat, s.lng]);
-
-    L.polyline(routeCoords, {
-      color: "#ff6699",
-      weight: 8,
-      opacity: 0.4,
-      dashArray: "6 10"
-    }).addTo(map);
-
-  </script>
-</body>
-</html>
-
-
+  map.setMinZoom(17);
+  map.setMaxZoom(17);
 
 </script>
 
 </body>
 </html>
+
 
