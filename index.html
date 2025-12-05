@@ -41,7 +41,17 @@ button { margin:5px; padding:5px 10px; font-size:14px; }
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const map = L.map('map').setView([35.321, 139.552],17);
+const map = L.map('map', {
+  center: [35.321, 139.552],
+  zoom: 17,
+  dragging: false,
+  zoomControl: false,
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  boxZoom: false,
+  keyboard: false
+});
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
  attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
@@ -57,6 +67,20 @@ const texts = {
   }
 };
 
+// 小町通りポリゴン（ざっくり長方形）
+const komachiPolygon = [
+  [35.319, 139.551],
+  [35.319, 139.554],
+  [35.324, 139.554],
+  [35.324, 139.551]
+];
+L.polygon(komachiPolygon, {
+  color: 'yellow',
+  weight: 2,
+  fillColor: 'rgba(255,255,0,0.2)',
+  fillOpacity: 0.2
+}).addTo(map);
+
 // スポット情報
 const spots = [
   {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
@@ -67,26 +91,11 @@ const spots = [
 
 // 店舗情報
 const stores = [
-  {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{
-    ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",
-    en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"
-  }},
-  {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{
-    ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",
-    en:"- Take trash home after buying chocolate<br>- Follow queue and share space"
-  }},
-  {lat:35.32287228279184,lng:139.5530859746436,name:"鎌倉茶々本店 Kamakura ChaCha",tips:{
-    ja:"・行列に並ぶときは前後の人に注意<br>・ゴミは必ず持ち帰りましょう<br>・ペット同伴は抱っこで",
-    en:"- Watch people before/after in line<br>- Take trash home<br>- Hold pets"
-  }},
-  {lat:35.3218792159195,lng:139.55255664628976,name:"鎌倉着物レンタル和楽",tips:{
-    ja:"・レンタル時の着物は丁寧に扱いましょう<br>・混雑時は順番を守りましょう",
-    en:"- Handle rented kimono carefully<br>- Follow the queue during busy times"
-  }},
-  {lat:35.32243404058744,lng:139.5527143339346,name:"鎌倉甘味処くるみ",tips:{
-    ja:"・甘味を食べたらゴミは持ち帰りましょう<br>・順番を守って並びましょう",
-    en:"- Take trash home after eating<br>- Follow the queue"
-  }}
+  {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"}},
+  {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",en:"- Take trash home after buying chocolate<br>- Follow queue and share space"}},
+  {lat:35.32287228279184,lng:139.5530859746436,name:"鎌倉茶々本店 Kamakura ChaCha",tips:{ja:"・行列に並ぶときは前後の人に注意<br>・ゴミは必ず持ち帰りましょう<br>・ペット同伴は抱っこで",en:"- Watch people before/after in line<br>- Take trash home<br>- Hold pets"}},
+  {lat:35.3218792159195,lng:139.55255664628976,name:"鎌倉着物レンタル和楽",tips:{ja:"・レンタル時の着物は丁寧に扱いましょう<br>・混雑時は順番を守りましょう",en:"- Handle rented kimono carefully<br>- Follow the queue during busy times"}},
+  {lat:35.32243404058744,lng:139.5527143339346,name:"鎌倉甘味処くるみ",tips:{ja:"・甘味を食べたらゴミは持ち帰りましょう<br>・順番を守って並びましょう",en:"- Take trash home after eating<br>- Follow the queue"}}
 ];
 
 const congestionLevels = {
@@ -134,7 +143,7 @@ function showTime(time){
   });
 
   // 店舗
-  const storeColors = ["blue","purple","skyblue","pink","green","orange"];
+  const storeColors = ["blue","purple","skyblue","pink","green"];
   stores.forEach((store,i)=>{
     const marker=L.circleMarker([store.lat,store.lng],{
       radius:18, fillColor:storeColors[i%storeColors.length], color:storeColors[i%storeColors.length], fillOpacity:0.9
