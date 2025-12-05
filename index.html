@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Kamakura Map - サイドバー改良版</title>
+<title>Kamakura Map - スマホ向け拡大UI</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -12,12 +12,12 @@
   #map { flex:1; transition: margin-left 0.3s; height:100vh; }
 
   #sidebar {
-    width:350px;
+    width:360px;
     max-width:80%;
-    background:#f5f5f5;
+    background:#f0f0f0;
     overflow-y:auto;
     position:fixed;
-    left:-350px;
+    left:-360px;
     top:0;
     bottom:0;
     transition:left 0.3s;
@@ -41,13 +41,11 @@
     font-size:14px;
     transition:left 0.3s;
   }
-  #toggleBtn.open { left:350px; }
+  #toggleBtn.open { left:360px; }
 
   h2 { margin-top:0; }
 
-  .category {
-    margin-top:20px;
-  }
+  .category { margin-top:20px; }
   .category h3 {
     margin-bottom:10px;
     border-bottom:1px solid #ccc;
@@ -62,14 +60,13 @@
     border-radius: 5px; 
     cursor: pointer; 
     box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-    background-color:#3498db;
-    color:#fff; 
-    transition: transform 0.1s, box-shadow 0.2s;
+    background-color:#fff; 
+    color:#333; 
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .item:hover { 
-    transform: scale(1.02);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
+  .item:hover { transform: scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+  .item.selected { transform: scale(1.05); box-shadow:0 6px 12px rgba(0,0,0,0.3); }
+
   .item img { width:100%; border-radius:4px; margin-bottom:8px; }
   .item .title { font-size:16px; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; }
   .item .title .level { margin-left:6px; font-size:14px; padding:2px 6px; border-radius:3px; color:#fff; }
@@ -91,7 +88,7 @@
 
 <button id="toggleBtn" onclick="toggleSidebar()">☰ マナー啓発</button>
 <div id="sidebar">
-  <h2>マナー啓発ポイント</h2>
+  <h2>マナー啓発 / Manners</h2>
   <div id="list"></div>
 </div>
 <div id="map"></div>
@@ -111,7 +108,81 @@ function toggleSidebar() {
 var map = L.map('map').setView([35.3198, 139.5520], 17);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
 
-// マナー啓発データ（カテゴリ別）
+// マナー啓発データ
 var points = [
-  {lat:35.319376, lng:139.551265, title:"ゴミは持ち帰ろう", detail:"入口付近ではゴミは必ず持ち帰りましょう。", level:"high", img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg", category:"ゴミ・環境"},
-  {lat:35.320342
+  {lat:35.319376, lng:139.551265, titleJP:"ゴミは持ち帰ろう", titleEN:"Take your trash home", detailJP:"入口付近ではゴミは必ず持ち帰りましょう。", detailEN:"Please take your trash home at the entrance area.", level:"high", img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg", category:"ゴミ・環境 / Trash & Environment"},
+  {lat:35.320342, lng:139.551733, titleJP:"飲食は休憩所で", titleEN:"Eat/drink in rest areas", detailJP:"歩きながらの飲食は控えましょう。", detailEN:"Avoid eating or drinking while walking.", level:"medium", img:"https://cdn.pixabay.com/photo/2017/08/10/03/25/eating-2611922_960_720.jpg", category:"飲食 / Food & Drink"},
+  {lat:35.322364, lng:139.552682, titleJP:"ペットはリード必須", titleEN:"Pets must be leashed", detailJP:"通りではペットは必ずリードをつけ、糞は持ち帰りましょう。", detailEN:"Pets must be on a leash and clean up after them.", level:"high", img:"https://cdn.pixabay.com/photo/2016/11/29/10/07/dog-1868085_960_720.jpg", category:"ペット / Pets"},
+  {lat:35.324273, lng:139.553724, titleJP:"撮影マナー", titleEN:"Photo manners", detailJP:"他人を写さないよう配慮し、建物内は許可を得て撮影しましょう。", detailEN:"Be considerate not to photograph others. Obtain permission indoors.", level:"medium", img:"https://cdn.pixabay.com/photo/2015/09/05/21/51/tourist-926051_960_720.jpg", category:"写真・観光マナー / Photo & Tourism"},
+  {lat:35.321500, lng:139.552000, titleJP:"交通安全", titleEN:"Traffic safety", detailJP:"歩行者専用エリアを守り、通行の妨げにならないようにしましょう。", detailEN:"Follow pedestrian zones and avoid blocking paths.", level:"high", img:"https://cdn.pixabay.com/photo/2016/11/29/02/11/traffic-1868401_960_720.jpg", category:"交通・安全 / Traffic & Safety"},
+  {lat:35.323000, lng:139.553000, titleJP:"地域配慮", titleEN:"Community consideration", detailJP:"大声で騒がず、地元商店や住民への配慮を忘れないように。", detailEN:"Do not make loud noise and respect local shops and residents.", level:"medium", img:"https://cdn.pixabay.com/photo/2016/03/31/19/41/friends-1295130_960_720.jpg", category:"地域配慮 / Community"}
+];
+
+var listDiv = document.getElementById("list");
+var categories = {};
+points.forEach(function(point){
+  if(!categories[point.category]) categories[point.category] = [];
+  categories[point.category].push(point);
+});
+
+// マーカーアイコン
+function getIcon(level){
+  var color = (level==="high")?"red":(level==="medium")?"orange":"green";
+  return L.icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-" + color + ".png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [25,41],
+    iconAnchor: [12,41],
+    popupAnchor: [1,-34],
+    shadowSize: [41,41]
+  });
+}
+
+// サイドバー作成
+for(var cat in categories){
+  var catDiv = document.createElement("div");
+  catDiv.className = "category";
+  catDiv.innerHTML = `<h3>${cat}</h3>`;
+  
+  categories[cat].forEach(function(point){
+    var marker = L.marker([point.lat, point.lng], {icon:getIcon(point.level)}).addTo(map)
+      .bindPopup(`<b>${point.titleJP}</b><br>${point.detailJP}<hr><b>${point.titleEN}</b><br>${point.detailEN}`);
+    
+    var item = document.createElement("div");
+    item.className = "item " + point.level;
+    item.innerHTML = `<img src="${point.img}" alt="${point.titleJP}"><div class="title">${point.titleJP} / ${point.titleEN}<span class="level">${point.level==="high"?"⚠ 高注意":point.level==="medium"?"！ 中注意":"✓ 低注意"}</span></div><p>${point.detailJP}<br>${point.detailEN}</p>`;
+    
+    // タップ時に選択状態を反映
+    item.addEventListener("click", function(){
+      // すべてのカードの選択を解除
+      document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
+      this.classList.add("selected");
+      map.setView([point.lat, point.lng],18);
+      marker.openPopup();
+    });
+    
+    catDiv.appendChild(item);
+  });
+  listDiv.appendChild(catDiv);
+}
+
+// ルート
+L.polyline([
+  [35.319414,139.551258],
+  [35.320386,139.551759],
+  [35.322326,139.552674],
+  [35.324286,139.553731]
+], { color:'#ff0000', weight:8, opacity:0.5, dashArray:'10,10' }).addTo(map);
+
+// ズーム固定
+map.scrollWheelZoom.disable();
+map.touchZoom.disable();
+map.doubleClickZoom.disable();
+map.boxZoom.disable();
+map.keyboard.disable();
+map.setMinZoom(17);
+map.setMaxZoom(17);
+
+</script>
+</body>
+</html>
