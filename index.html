@@ -8,20 +8,21 @@
 body { margin:0; font-family:sans-serif; background:#f7f7f7; }
 header { background:#ffcc33; padding:20px; text-align:center; font-size:24px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
 #controls { text-align:center; padding:10px; }
-button { margin:5px; padding:8px 14px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
+button { margin:5px; padding:8px 16px; font-size:16px; border-radius:5px; border:none; cursor:pointer; background:#4CAF50; color:white; transition:0.2s;}
 button:hover { background:#45a049;}
-#map { height:70vh; margin:0 auto; width:95%; max-width:900px; border:2px solid #ccc; border-radius:8px; }
-#tips { width:95%; max-width:900px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:14px; min-height:50px; }
+#map { height:80vh; margin:0 auto; max-width:900px; border:2px solid #ccc; border-radius:8px; }
+#tips { max-width:900px; margin:10px auto; padding:10px; background:#ffffe0; border:1px solid #ccc; border-radius:5px; font-size:15px; min-height:90px; }
 .legend { background:white; padding:10px; line-height:1.5; box-shadow:0 0 6px rgba(0,0,0,0.3);}
 .legend span { display:inline-block; width:12px; height:12px; margin-right:5px; vertical-align:middle; }
-.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; font-size:12px; }
+.marker-label { font-weight:bold; color:white; text-align:center; line-height:24px; font-size:14px; }
 
 /* スマホ対応 */
 @media (max-width:480px){
-  header { font-size:18px; padding:15px; }
-  button { padding:12px 18px; font-size:16px; }
-  #map { height:55vh; }
-  #tips { font-size:13px; min-height:70px; }
+  header { font-size:20px; padding:18px; }
+  button { padding:14px 20px; font-size:18px; }
+  #map { height:85vh; }
+  #tips { font-size:16px; min-height:100px; }
+  .marker-label { font-size:16px; line-height:28px; }
 }
 </style>
 </head>
@@ -47,19 +48,15 @@ button:hover { background:#45a049;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// PCかスマホか判定
-const isMobile = window.innerWidth <= 480;
-
-// マップ設定
 const map = L.map('map', {
   center: [35.3219, 139.5525],
   zoom: 17,
-  dragging: isMobile,
-  scrollWheelZoom: isMobile,
-  doubleClickZoom: isMobile,
-  boxZoom: isMobile,
-  keyboard: isMobile,
-  tap: isMobile
+  dragging: false,
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  boxZoom: false,
+  keyboard: false,
+  tap: false
 });
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -71,7 +68,6 @@ const texts = {
   en: { mapTips:"⚠️ Manners on Komachi Street: Watch your surroundings, do not look at your smartphone while walking, take your trash home.", congestionLegend:{"混雑":"Crowded","やや混雑":"Somewhat crowded","空き":"Empty"} }
 };
 
-// スポット
 const spots = [
   {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
   {lat:35.320434,lng:139.551728,name:"スポット2",tips:{ja:"ゴミは必ず持ち帰ろう",en:"Take your trash home"}},
@@ -79,7 +75,6 @@ const spots = [
   {lat:35.324279,lng:139.553704,name:"スポット4",tips:{ja:"歩きスマホ禁止",en:"No smartphone while walking"}}
 ];
 
-// 店舗（青で統一）
 const stores = [
   {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"}},
   {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",en:"- Take trash home after buying chocolate<br>- Follow queue and share space"}},
@@ -91,13 +86,13 @@ const stores = [
 const congestionLevels = { "平日昼":["やや混雑","やや混雑","空き","空き"], "平日夕方":["混雑","混雑","やや混雑","やや混雑"], "休日昼":["混雑","混雑","混雑","やや混雑"], "休日夕方":["やや混雑","やや混雑","やや混雑","空き"] };
 
 let currentMarkers=[],currentLanguage='ja',currentTime='平日昼';
+
 function getColor(level){ return level==="混雑"?"red":level==="やや混雑"?"orange":"green"; }
 function setLanguage(lang){ currentLanguage=lang; document.getElementById('tips').innerHTML=texts[lang].mapTips; showTime(currentTime); }
 
 function showTime(time){
   currentTime=time;
   currentMarkers.forEach(m=>map.removeLayer(m)); currentMarkers=[];
-  // スポット
   spots.forEach((spot,index)=>{
     const level=congestionLevels[time][index];
     const marker=L.circleMarker([spot.lat,spot.lng],{radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9}).addTo(map);
@@ -106,7 +101,6 @@ function showTime(time){
     const labelMarker=L.marker([spot.lat,spot.lng],{icon:label}).addTo(map);
     currentMarkers.push(marker,labelMarker);
   });
-  // 店舗
   stores.forEach(store=>{
     const marker=L.circleMarker([store.lat,store.lng],{radius:18, fillColor:"blue", color:"blue", fillOpacity:0.9}).addTo(map);
     marker.on('click',()=>{document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;});
