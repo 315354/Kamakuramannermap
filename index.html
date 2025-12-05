@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>小町通り 混雑マップ（スポット番号付き・時間帯切替）</title>
+  <title>小町通り 混雑マップ（マナー啓発付き）</title>
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     body { margin:0; padding:0; font-family: sans-serif; }
-    #map { height: 90vh; }
+    #map { height: 88vh; }
     #buttons { text-align:center; padding: 10px; background: #f0f0f0; }
     button { margin: 5px; padding: 5px 10px; font-size: 14px; }
     .legend {
@@ -30,6 +30,13 @@
       text-align: center;
       line-height: 24px;
     }
+    #tips {
+      text-align:center;
+      padding: 6px;
+      font-size: 14px;
+      background: #ffffe0;
+      border-top: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -42,6 +49,9 @@
 </div>
 
 <div id="map"></div>
+<div id="tips">
+  ⚠️ 小町通りを歩くときのマナー：歩行中はスマホを見ずに周りに注意しましょう。ゴミは持ち帰り、他の人に迷惑をかけないようにしてください。
+</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -53,31 +63,31 @@
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // 4スポットの時間帯ごとの混雑データ
+  // 4スポットの時間帯ごとの混雑データと啓発メッセージ
   const congestionData = {
     "平日昼": [
-      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"大鳥居"},
-      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"小町通り商店街"},
-      {lat:35.32232618247578, lng:139.5526479032834, level:"空き", name:"小町通り"},
-      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"終点"}
+      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"スポット1", tip:"歩行中は周りに注意"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"スポット2", tip:"ゴミは必ず持ち帰ろう"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"空き", name:"スポット3", tip:"譲り合いの歩行を心がけよう"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"スポット4", tip:"歩きスマホ禁止"}
     ],
     "平日夕方": [
-      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"大鳥居"},
-      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"小町通り商店街"},
-      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"小町通り"},
-      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"終点"}
+      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"スポット1", tip:"周囲に注意"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"スポット2", tip:"ゴミは必ず持ち帰ろう"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"スポット3", tip:"譲り合いの歩行を心がけよう"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"スポット4", tip:"歩きスマホ禁止"}
     ],
     "休日昼": [
-      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"大鳥居"},
-      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"小町通り商店街"},
-      {lat:35.32232618247578, lng:139.5526479032834, level:"混雑", name:"小町通り"},
-      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"終点"}
+      {lat:35.31943819283287, lng:139.55123093860553, level:"混雑", name:"スポット1", tip:"周囲に注意"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"混雑", name:"スポット2", tip:"ゴミは必ず持ち帰ろう"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"混雑", name:"スポット3", tip:"譲り合いの歩行を心がけよう"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"やや混雑", name:"スポット4", tip:"歩きスマホ禁止"}
     ],
     "休日夕方": [
-      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"スポット1"},
-      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"スポット2"},
-      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"スポット3"},
-      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"スポット4"}
+      {lat:35.31943819283287, lng:139.55123093860553, level:"やや混雑", name:"スポット1", tip:"周囲に注意"},
+      {lat:35.32043390024664, lng:139.55172832211414, level:"やや混雑", name:"スポット2", tip:"ゴミは必ず持ち帰ろう"},
+      {lat:35.32232618247578, lng:139.5526479032834, level:"やや混雑", name:"スポット3", tip:"譲り合いの歩行を心がけよう"},
+      {lat:35.324278593700186, lng:139.55370448717107, level:"空き", name:"スポット4", tip:"歩きスマホ禁止"}
     ]
   };
 
@@ -93,11 +103,9 @@
 
   // マーカー表示更新
   function showTime(time) {
-    // 既存マーカー削除
     currentMarkers.forEach(m => map.removeLayer(m));
     currentMarkers = [];
 
-    // 新規マーカー作成
     congestionData[time].forEach(item => {
       const marker = L.circleMarker([item.lat,item.lng], {
         radius: 15,
@@ -106,9 +114,9 @@
         fillOpacity: 0.9
       }).addTo(map);
 
-      marker.bindPopup(`<b>${item.name}</b><br>${time}<br>混雑度: ${item.level}`);
+      marker.bindPopup(`<b>${item.name}</b><br>${time}<br>混雑度: ${item.level}<br>マナー: ${item.tip}`);
 
-      // マーカーに番号ラベル追加
+      // 番号ラベル
       const label = L.divIcon({
         className: 'marker-label',
         html: item.name.replace("スポット",""),
@@ -122,7 +130,6 @@
     });
   }
 
-  // 初期表示
   showTime('平日昼');
 
   // 凡例
@@ -138,7 +145,6 @@
     return div;
   };
   legend.addTo(map);
-
 </script>
 
 </body>
