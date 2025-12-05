@@ -1,61 +1,95 @@
 <script>
-// 強調用の変数
-let highlightedMarker = null;
+// マップ用スポット
+const spots = [
+  {lat:35.319438,lng:139.551231,name:"スポット1",tips:{ja:"歩行中は周りに注意",en:"Watch your surroundings"}},
+  {lat:35.320434,lng:139.551728,name:"スポット2",tips:{ja:"ゴミは必ず持ち帰ろう",en:"Take your trash home"}},
+  {lat:35.322326,lng:139.552648,name:"スポット3",tips:{ja:"譲り合いの歩行を心がけよう",en:"Walk considerately"}},
+  {lat:35.324279,lng:139.553704,name:"スポット4",tips:{ja:"歩きスマホ禁止",en:"No smartphone while walking"}}
+];
 
-// 店舗色マップ
+// 店舗情報
+const stores = [
+  {lat:35.32076265208144,lng:139.55178481003765,name:"ジラッファ 鎌倉小町通り店",tips:{
+    ja:"・ゴミは必ず持ち帰りましょう<br>・混雑時は順番を守って並びましょう<br>・大声で話さず、周囲に配慮しましょう<br>・ペットは抱っこまたはリードを使用しましょう",
+    en:"- Take your trash home<br>- Follow queue<br>- Speak quietly<br>- Hold pets"
+  }},
+  {lat:35.32099551453905,lng:139.5521661593194,name:"MAISON CACAO 鎌倉小町店",tips:{
+    ja:"・チョコレート購入後はゴミを持ち帰りましょう<br>・混雑時は順番を守り、譲り合いましょう",
+    en:"- Take trash home after buying chocolate<br>- Follow queue and share space"
+  }},
+  {lat:35.32287228279184,lng:139.5530859746436,name:"鎌倉茶々本店 Kamakura ChaCha",tips:{
+    ja:"・行列に並ぶときは前後の人に注意<br>・ゴミは必ず持ち帰りましょう<br>・ペット同伴は抱っこで",
+    en:"- Watch people before/after in line<br>- Take trash home<br>- Hold pets"
+  }}
+];
+
+// 店舗色
 const storeColors = ["blue","purple","skyblue"];
-stores.forEach((store,i)=>store.color=storeColors[i]);
+stores.forEach((store,i)=>store.color = storeColors[i]);
+
+// 強調用
+let highlightedMarker = null;
+let currentMarkers = [];
+let currentLanguage = 'ja';
+let currentTime = '平日昼';
+
+// 混雑レベル（スポットのみ）
+const congestionLevels = {
+  "平日昼":["やや混雑","やや混雑","空き","空き"],
+  "平日夕方":["混雑","混雑","やや混雑","やや混雑"],
+  "休日昼":["混雑","混雑","混雑","やや混雑"],
+  "休日夕方":["やや混雑","やや混雑","やや混雑","空き"]
+};
+
+// 色取得
+function getColor(level){ if(level==="混雑") return "red"; if(level==="やや混雑") return "orange"; return "green"; }
 
 function showTime(time){
-  currentTime=time;
+  currentTime = time;
+
+  // 既存マーカー削除
   currentMarkers.forEach(m=>map.removeLayer(m));
   currentMarkers=[];
 
-  // スポット
+  // スポット表示
   spots.forEach((spot,index)=>{
-    const level=congestionLevels[time][index];
-    const marker=L.circleMarker([spot.lat,spot.lng],{
+    const level = congestionLevels[time][index];
+    const marker = L.circleMarker([spot.lat,spot.lng],{
       radius:15, fillColor:getColor(level), color:getColor(level), fillOpacity:0.9, weight:1
     }).addTo(map);
 
-    marker.on('click',()=>{
-      // 前回の強調解除
-      if(highlightedMarker) highlightedMarker.setStyle({radius:highlightedMarker.options._originalRadius, weight:1});
-      // 強調
-      marker.setStyle({radius:25, weight:3});
-      highlightedMarker=marker;
-      // マナー表示
-      document.getElementById('tips').innerHTML=`<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;
-    });
-
-    // 保存元のサイズ
     marker.options._originalRadius = 15;
-
-    const label=L.divIcon({
-      className:'marker-label',
-      html:spot.name.replace("スポット",""),
-      iconSize:[24,24], iconAnchor:[12,12]
+    marker.on('click',()=>{
+      if(highlightedMarker) highlightedMarker.setStyle({radius:highlightedMarker.options._originalRadius, weight:1});
+      marker.setStyle({radius:25, weight:3});
+      highlightedMarker = marker;
+      document.getElementById('tips').innerHTML = `<b>${spot.name}</b><br>混雑度:${level}<br>マナー:<br>${spot.tips[currentLanguage]}`;
     });
-    const labelMarker=L.marker([spot.lat,spot.lng],{icon:label}).addTo(map);
+
+    const label = L.divIcon({className:'marker-label',html:spot.name.replace("スポット",""),iconSize:[24,24],iconAnchor:[12,12]});
+    const labelMarker = L.marker([spot.lat,spot.lng],{icon:label}).addTo(map);
 
     currentMarkers.push(marker,labelMarker);
   });
 
-  // 店舗
-  stores.forEach((store)=>{
-    const marker=L.circleMarker([store.lat,store.lng],{
+  // 店舗表示
+  stores.forEach(store=>{
+    const marker = L.circleMarker([store.lat,store.lng],{
       radius:18, fillColor:store.color, color:store.color, fillOpacity:0.9, weight:1
     }).addTo(map);
 
+    marker.options._originalRadius = 18;
     marker.on('click',()=>{
       if(highlightedMarker) highlightedMarker.setStyle({radius:highlightedMarker.options._originalRadius, weight:1});
       marker.setStyle({radius:28, weight:3});
-      highlightedMarker=marker;
-      document.getElementById('tips').innerHTML=`<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;
+      highlightedMarker = marker;
+      document.getElementById('tips').innerHTML = `<b>${store.name}</b><br>マナー:<br>${store.tips[currentLanguage]}`;
     });
 
-    marker.options._originalRadius = 18;
     currentMarkers.push(marker);
   });
 }
+
+// 初期表示
+showTime('平日昼');
 </script>
