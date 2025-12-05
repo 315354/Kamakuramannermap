@@ -12,11 +12,13 @@
     body { margin:0; display:flex; font-family: sans-serif; }
     #map { height: 100vh; width: 70%; }
     #sidebar { width: 30%; padding: 10px; box-sizing: border-box; overflow-y: auto; background: #f5f5f5; }
-    .item { margin-bottom: 10px; padding: 8px; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color:#fff; font-weight: bold; }
-    .item:hover { opacity: 0.8; }
+    .item { margin-bottom: 15px; padding: 8px; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color:#fff; font-weight: bold; }
+    .item:hover { opacity: 0.85; }
     .high { background-color: #e74c3c; }    /* 赤：重要 */
     .medium { background-color: #f39c12; }  /* オレンジ：注意 */
     .low { background-color: #27ae60; }     /* 緑：補助 */
+    .item img { width:100%; border-radius:4px; margin-bottom:5px; }
+    .item p { margin:0; font-weight:normal; color:#fff; }
   </style>
 </head>
 <body>
@@ -37,12 +39,12 @@
     maxZoom: 19
   }).addTo(map);
 
-  // ★★ マナー啓発ポイントデータ（注意度付き） ★★
+  // ★★ マナー啓発ポイントデータ（画像・説明付き） ★★
   var points = [
-    {lat: 35.319376, lng: 139.551265, title: "小町通り 大鳥居", detail: "入口付近ではゴミは必ず持ち帰りましょう。", level:"high"},
-    {lat: 35.320342, lng: 139.551733, title: "小町通り商店街", detail: "歩きながらの飲食は控えましょう。", level:"medium"},
-    {lat: 35.322364, lng: 139.552682, title: "小町通り", detail: "通りではペットはリード必須です。", level:"low"},
-    {lat: 35.324273, lng: 139.553724, title: "小町通り終点", detail: "観光客同士や地元の方に迷惑をかけないように心がけましょう。", level:"medium"}
+    {lat:35.319376, lng:139.551265, title:"小町通り 大鳥居", detail:"入口付近ではゴミは必ず持ち帰りましょう。", level:"high", img:"https://cdn.pixabay.com/photo/2017/02/01/22/02/trash-2034250_960_720.jpg"},
+    {lat:35.320342, lng:139.551733, title:"小町通り商店街", detail:"歩きながらの飲食は控えましょう。", level:"medium", img:"https://cdn.pixabay.com/photo/2017/08/10/03/25/eating-2611922_960_720.jpg"},
+    {lat:35.322364, lng:139.552682, title:"小町通り", detail:"通りではペットはリード必須です。", level:"low", img:"https://cdn.pixabay.com/photo/2016/11/29/10/07/dog-1868085_960_720.jpg"},
+    {lat:35.324273, lng:139.553724, title:"小町通り終点", detail:"観光客同士や地元の方に迷惑をかけないように心がけましょう。", level:"medium", img:"https://cdn.pixabay.com/photo/2015/09/05/21/51/tourist-926051_960_720.jpg"}
   ];
 
   var listDiv = document.getElementById("list");
@@ -69,10 +71,14 @@
     var marker = L.marker([point.lat, point.lng], {icon: getIcon(point.level)}).addTo(map)
       .bindPopup("<b>" + point.title + "</b><br>" + point.detail);
 
-    // サイドバーにリスト作成
+    // サイドバーにリスト作成（画像＋タイトル＋説明）
     var item = document.createElement("div");
-    item.className = "item " + point.level; // 注意度に応じて色を設定
-    item.innerText = point.title;
+    item.className = "item " + point.level;
+    item.innerHTML = `
+      <img src="${point.img}" alt="${point.title}">
+      <strong>${point.title}</strong>
+      <p>${point.detail}</p>
+    `;
     item.onclick = function() {
       map.setView([point.lat, point.lng], 18);
       marker.openPopup();
@@ -107,3 +113,4 @@
 
 </body>
 </html>
+
